@@ -3,7 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function HomePage() {
+export default function IndexPage() {
   const router = useRouter()
 
   return (
@@ -85,6 +85,34 @@ export default function HomePage() {
           justifyContent: 'center',
         }}
       >
+        <div
+          style={{
+            padding: '20px',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            textAlign: 'center',
+            minWidth: '200px',
+          }}
+          onClick={() => {
+            router.push('/home')
+          }}
+        >
+          <div style={{ fontSize: '24px', marginBottom: '8px' }}>🏠</div>
+          <h3
+            style={{
+              margin: '0 0 8px 0',
+              fontSize: '16px',
+              fontWeight: 'bold',
+            }}
+          >
+            홈
+          </h3>
+          <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+            야구루트의 홈 화면!
+          </p>
+        </div>
+
         <div
           style={{
             padding: '20px',

@@ -1,9 +1,9 @@
-import HomePage from './components/HomePage'
+import IndexPage from "./components/IndexPage";
 
-export default function Home() {
+export default function Page() {
   return (
     <main>
-      <HomePage />
+      <IndexPage />
     </main>
   )
 }
