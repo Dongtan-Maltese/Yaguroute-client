@@ -1,21 +1,24 @@
 'use client'
 
 import React from 'react'
-import { Search, Home, User } from 'lucide-react'
+import { ChevronRight, Search } from 'lucide-react'
 import FloatingNav from '../components/common/FloatingNav'
+import iconPlayerActive from '../../images/map/icon-player-active.png'
+import iconPlayers from '../../images/home/icon-players.png'
+import CategoryTabs from '../components/CategoryTabs'
+import { dummyPlaces } from '@/data/playerRecommendPlace'
+import { dummyRoutes } from '@/data/routes'
 
 export default function HomePage() {
   return (
     <div
       style={{
-        fontFamily: 'sans-serif',
         backgroundColor: '#f9f7f5',
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      {/* 상단 영역 */}
       <header
         style={{
           padding: '16px',
@@ -25,14 +28,7 @@ export default function HomePage() {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontWeight: 'bold' }}>잠실 야구장</span>
-          <div
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              backgroundColor: '#ff6b35',
-            }}
-          />
+          <img src={iconPlayerActive.src} style={{ width: '32px', height: '32px' }}/>
         </div>
         <div
           style={{
@@ -79,25 +75,60 @@ export default function HomePage() {
 
       {/* 추천 섹션 */}
       <section style={{ padding: '0 16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px' }}>
-          팬추천 BEST · 야구선수 맛집
-        </h3>
+        <CategoryTabs />
         <div style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
-          {['만두 냉면', '구이구이쭈갈비', '구수한 해장국'].map((title, i) => (
+          {dummyPlaces.map((place) => (
             <div
-              key={i}
+              key={place.id}
               style={{
-                minWidth: '180px',
+                width: '160px',
                 borderRadius: '12px',
                 overflow: 'hidden',
                 backgroundColor: '#fff',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                flexShrink: 0,
               }}
             >
-              <div style={{ height: '100px', backgroundColor: '#ddd' }} />
+              <div
+                style={{
+                  position: 'relative',
+                  height: '120px',
+                  backgroundColor: '#ddd',
+                }}
+              >
+                <img
+                  src={place.image}
+                  alt={place.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                {place.badge && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '8px',
+                      left: '8px',
+                      backgroundColor: '#ff4500',
+                      color: '#fff',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      padding: '4px 6px',
+                      borderRadius: '6px',
+                    }}
+                  >
+                    {place.badge}
+                  </div>
+                )}
+              </div>
               <div style={{ padding: '8px 12px', textAlign: 'left' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{title}</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>가게 위치 설명</div>
+                <div style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  {place.title}{' '}
+                  <span style={{ fontSize: '12px', fontWeight: 400, color: '#999' }}>
+                    {place.category}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                  {place.description}
+                </div>
               </div>
             </div>
           ))}
@@ -105,26 +136,42 @@ export default function HomePage() {
       </section>
 
       {/* 내 야구루트 */}
-      <section style={{ padding: '16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px' }}>내 야구루트</h3>
+      <section style={{ padding: '28px 16px' }}>
         <div
           style={{
-            backgroundColor: '#fff',
-            borderRadius: '12px',
-            padding: '12px',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '12px',
           }}
         >
-          <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>8/2 고척 스카이돔</div>
-          <div style={{ fontWeight: 'bold' }}>빵생빵사! 빵에 인생 걸었냐?</div>
-          <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-            둥 대전역 - 성심당 - 만수 불고기 - 탕정역 - 한화생명
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontSize: '19px', fontWeight: 'bold' }}>내 야구루트</div>
+            <ChevronRight size={20} color="#888" />
           </div>
+          <img src={iconPlayers.src} alt="players" style={{ position: 'absolute', right: 24, width: '92px' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {dummyRoutes.map((route) => (
+            <div
+              key={route.id}
+              style={{
+                backgroundColor: '#fff',
+                borderRadius: '12px',
+                padding: '12px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>{route.date}</div>
+              <div style={{ fontWeight: 'bold' }}>{route.title}</div>
+              <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>{route.path}</div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 하단 네비게이션 */}
       <FloatingNav />
     </div>
   )
