@@ -45,6 +45,7 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(({
   const selectedMarkerRef = useRef<any>(null);
   const selectedInfoWindowRef = useRef<any>(null);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
 
   useImperativeHandle(ref, () => ({
     searchPlaces: (keyword?: string) => {
@@ -142,6 +143,7 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(({
         if (status === window.kakao.maps.services.Status.OK) {
           setSearchResults(data);
           setShowBottomSheet(true);
+          setViewMode('map'); // 검색 시 기본적으로 지도 모드
           
           // 검색 결과를 지도에 마커로 표시
           const newMarkers: any[] = [];
@@ -191,6 +193,12 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(({
   // 바텀시트 닫기
   const handleCloseBottomSheet = () => {
     setShowBottomSheet(false);
+    setViewMode('map'); // 바텀시트를 닫을 때 지도 모드로 리셋
+  };
+
+  // 뷰 모드 변경 핸들러
+  const handleViewModeChange = (mode: 'map' | 'list') => {
+    setViewMode(mode);
   };
 
   // 마커 클릭 핸들러
@@ -246,8 +254,8 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(({
 
   // 장소 선택 핸들러 (바텀시트에서 선택)
   const handlePlaceSelect = (place: Place) => {
-    // 바텀시트 닫기
-    setShowBottomSheet(false);
+    // 목록보기 모드에서 선택한 경우 지도 모드로 전환
+    setViewMode('map');
     
     // 마커 클릭과 동일한 로직 실행
     handleMarkerClick(place);
@@ -262,6 +270,8 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(({
         searchResults={searchResults}
         onClose={handleCloseBottomSheet}
         onPlaceSelect={handlePlaceSelect}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
       />
 
       {/* 지도 컨테이너 */}
