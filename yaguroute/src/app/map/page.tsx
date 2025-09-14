@@ -23,7 +23,7 @@ export default function MapPage() {
   }
 
   const onNavigateToHome = () => {
-    router.push('/')
+    router.push('/home')
   }
 
   return (
