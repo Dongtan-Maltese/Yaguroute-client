@@ -1,49 +1,51 @@
-'use client';
+'use client'
 
-import React, { useState, useRef } from 'react';
-import KakaoMap from '../components/KakaoMap';
-import iconHome from '../../images/map/icon-home.png';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef } from 'react'
+import KakaoMap from '../components/KakaoMap'
+import iconHome from '../../images/map/icon-home.png'
+import { useRouter } from 'next/navigation'
 
 export default function MapPage() {
-  const router = useRouter();
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const kakaoMapRef = useRef<any>(null);
+  const router = useRouter()
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const kakaoMapRef = useRef<any>(null)
 
   const handleSearch = () => {
     if (kakaoMapRef.current && searchKeyword.trim()) {
-      kakaoMapRef.current.searchPlaces(searchKeyword);
+      kakaoMapRef.current.searchPlaces(searchKeyword)
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      handleSearch()
     }
-  };
+  }
 
   const onNavigateToHome = () => {
-    router.push('/');
-  };
+    router.push('/')
+  }
 
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
       {/* 상단 검색창 */}
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        backgroundColor: 'white',
-        padding: '8px 16px',
-        borderRadius: '25px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-        minWidth: '300px'
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          backgroundColor: 'white',
+          padding: '8px 16px',
+          borderRadius: '25px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          minWidth: '300px',
+        }}
+      >
         {/* 홈 버튼 */}
         <button
           style={{
@@ -55,31 +57,39 @@ export default function MapPage() {
           }}
           onClick={onNavigateToHome}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#555';
+            e.currentTarget.style.backgroundColor = '#555'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#333';
+            e.currentTarget.style.backgroundColor = '#333'
           }}
         >
-          <img src={iconHome.src} alt="home" style={{ width: '32px', height: '32px' }} />
+          <img
+            src={iconHome.src}
+            alt="home"
+            style={{ width: '32px', height: '32px' }}
+          />
         </button>
 
         {/* 검색창 */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '20px',
-          padding: '8px 16px',
-          border: '2px solid transparent',
-          transition: 'all 0.2s ease'
-        }}>
-          <span style={{ 
-            color: '#666', 
-            marginRight: '8px',
-            fontSize: '16px'
-          }}>
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '20px',
+            padding: '8px 16px',
+            border: '2px solid transparent',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <span
+            style={{
+              color: '#666',
+              marginRight: '8px',
+              fontSize: '16px',
+            }}
+          >
             🔍
           </span>
           <input
@@ -94,7 +104,7 @@ export default function MapPage() {
               outline: 'none',
               backgroundColor: 'transparent',
               fontSize: '14px',
-              color: '#333'
+              color: '#333',
             }}
           />
         </div>
@@ -112,13 +122,13 @@ export default function MapPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#e0e0e0';
+            e.currentTarget.style.backgroundColor = '#e0e0e0'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#f0f0f0';
+            e.currentTarget.style.backgroundColor = '#f0f0f0'
           }}
         >
           <span style={{ color: '#666', fontSize: '14px' }}>→</span>
@@ -126,15 +136,15 @@ export default function MapPage() {
       </div>
 
       {/* 지도 */}
-      <KakaoMap 
+      <KakaoMap
         ref={kakaoMapRef}
-        width="100%" 
+        width="100%"
         height="100vh"
-        center={{ lat: 37.5665, lng: 126.9780 }}
+        center={{ lat: 37.5665, lng: 126.978 }}
         level={3}
         searchKeyword={searchKeyword}
         onSearchKeywordChange={setSearchKeyword}
       />
     </div>
-  );
+  )
 }

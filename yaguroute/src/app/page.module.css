@@ -59,7 +59,9 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .feature:hover {
@@ -92,20 +94,20 @@
   .main {
     padding: 1rem;
   }
-  
+
   .title {
     font-size: 2rem;
   }
-  
+
   .description {
     font-size: 1rem;
   }
-  
+
   .features {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .feature {
     padding: 1.5rem;
   }
