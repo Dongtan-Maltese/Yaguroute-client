@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import baseballRestaurants from '../../data/baseballRestaurants.json';
+import { baseballRestaurants } from '../../data/baseballRestaurants';
 import iconPlayerActive from '../../images/map/icon-player-active.png';
 import iconPlayer from '../../images/map/icon-player.png';
+import TeamSelector from './TeamSelector';
+import PlaceList from './PlaceList';
 
 interface Place {
   place_name: string;
@@ -15,6 +17,7 @@ interface Place {
   description?: string;
   rating?: number;
   image?: string;
+  team?: string;
 }
 
 interface SearchBottomSheetProps {
@@ -24,6 +27,27 @@ interface SearchBottomSheetProps {
   onPlaceSelect: (place: Place) => void;
 }
 
+interface BaseballTeam {
+  name: string;
+  code: string;
+  logo: string;
+  color: string;
+}
+
+// 프로야구 구단 데이터
+const baseballTeams: BaseballTeam[] = [
+  { name: '한화 이글스', code: 'hanwha', logo: 'Eagles', color: '#FC4E00' },
+  { name: 'LG 트윈스', code: 'lg', logo: 'Twins', color: '#C30452' },
+  { name: '키움 히어로즈', code: 'kiwoom', logo: 'Heroes', color: '#6E1A29' },
+  { name: 'SSG 랜더스', code: 'ssg', logo: 'Landers', color: '#CE0E2D' },
+  { name: 'KT 위즈', code: 'kt', logo: 'wiz', color: '#3E3E3E' },
+  { name: '삼성 라이온즈', code: 'samsung', logo: 'Lions', color: '#074CA1' },
+  { name: '롯데 자이언츠', code: 'lotte', logo: 'Giants', color: '#00357E' },
+  { name: 'NC 다이노스', code: 'nc', logo: 'Dinos', color: '#315288' },
+  { name: 'KIA 타이거즈', code: 'kia', logo: 'Tigers', color: '#EA0029' },
+  { name: '두산 베어스', code: 'doosan', logo: 'Bears', color: '#383284' }
+];
+
 export default function SearchBottomSheet({
   isVisible,
   searchResults,
@@ -31,13 +55,28 @@ export default function SearchBottomSheet({
   onPlaceSelect
 }: SearchBottomSheetProps) {
   const [activeTab, setActiveTab] = useState<'fan' | 'baseball'>('fan');
+  const [selectedTeam, setSelectedTeam] = useState<BaseballTeam>(baseballTeams[0]); // 기본값: 한화 이글스
+  const [showTeamSelector, setShowTeamSelector] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
-  const currentData = activeTab === 'fan' ? searchResults : baseballRestaurants;
+  const filteredRestaurants = baseballRestaurants.filter(restaurant => 
+    restaurant.team === selectedTeam.code
+  );
+  
+  const currentData = activeTab === 'fan' ? searchResults : filteredRestaurants;
   const hasData = currentData.length > 0;
+
+  const handleTeamSelect = (team: BaseballTeam) => {
+    setSelectedTeam(team);
+    setShowTeamSelector(false);
+  };
+
+  const handleCloseTeamSelector = () => {
+    setShowTeamSelector(false);
+  };
 
   return (
     <div style={{
@@ -123,59 +162,60 @@ export default function SearchBottomSheet({
           야구선수 맛집
         </button>
       </div>
-      
-      {/* 데이터 목록 */}
-      <div style={{ padding: '0 0 20px 0' }}>
-        {hasData ? currentData.map((place, index) => (
-          <div
-            key={index}
-            onClick={() => onPlaceSelect(place)}
+
+      {/* 구단 선택 (야구선수 맛집 탭에서만 표시) */}
+      {activeTab === 'baseball' && (
+        <div style={{ padding: '0 20px 16px 20px' }}>
+          <button
+            onClick={() => setShowTeamSelector(true)}
             style={{
-              padding: '16px 20px',
-              borderBottom: '1px solid #f0f0f0',
+              width: '100%',
+              border: 0,
+              borderRadius: '8px',
+              backgroundColor: 'white',
               cursor: 'pointer',
-              fontSize: '14px',
-              transition: 'background-color 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f8f9fa';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'white';
+              display: 'flex',
+              alignItems: 'center',
+              fontSize: '16px',
+              gap: '12px'
             }}
           >
-            <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '16px' }}>
-              {place.place_name}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: selectedTeam.color,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: 'white',
+              }}>
+                {selectedTeam.logo}
+              </div>
+              <span style={{ fontWeight: 'bold', color: '#333' }}>
+                {selectedTeam.name}
+              </span>
             </div>
-            {place.category && (
-              <div style={{ color: '#FF6B35', fontSize: '12px', marginBottom: '2px', fontWeight: 'bold' }}>
-                {place.category}
-              </div>
-            )}
-            {place.description && (
-              <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
-                {place.description}
-              </div>
-            )}
-            <div style={{ color: '#666', fontSize: '13px' }}>
-              {place.road_address_name || place.address_name}
-            </div>
-            {place.rating && (
-              <div style={{ color: '#FF6B35', fontSize: '12px', marginTop: '4px' }}>
-                ⭐ {place.rating}
-              </div>
-            )}
-          </div>
-        )) : (
-          <div style={{
-            padding: '40px 20px',
-            textAlign: 'center',
-            color: '#666'
-          }}>
-            {activeTab === 'fan' ? '검색 결과가 없습니다.' : '야구선수 맛집 데이터를 불러오는 중...'}
-          </div>
-        )}
-      </div>
+            <span style={{ color: '#666', fontSize: '14px' }}>▼</span>
+          </button>
+        </div>
+      )}
+      
+      <PlaceList
+        places={currentData}
+        onPlaceSelect={onPlaceSelect}
+      />
+
+      <TeamSelector 
+        isVisible={showTeamSelector}
+        teams={baseballTeams}
+        selectedTeam={selectedTeam}
+        onTeamSelect={handleTeamSelect}
+        onClose={handleCloseTeamSelector}
+      />
     </div>
   );
 }
