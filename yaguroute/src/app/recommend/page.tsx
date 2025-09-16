@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import { RecommendStep } from '@/app/types'
 import GameSelection from '../components/recommend/Game'
 import StartLocation from '../components/recommend/StartLocation'
+import TimeSelection from '../components/recommend/TimeSelection'
+import ArrivalTime from '../components/recommend/ArrivalTime'
+import TourStyle from '../components/recommend/TourStyle'
 
 export default function RecommendPage(): JSX.Element {
   const router = useRouter()
@@ -33,11 +36,11 @@ export default function RecommendPage(): JSX.Element {
       case 2:
         return <StartLocation onNext={() => setCurrentStep(3)} onBack={() => setCurrentStep(1)} />
       case 3:
-        return <div>시간 선택 단계 (구현 예정)</div>
+        return <TimeSelection onNext={() => setCurrentStep(4)} onBack={() => setCurrentStep(2)} />
       case 4:
-        return <div>경기장 도착 시간 선택 단계 (구현 예정)</div>
+        return <ArrivalTime onNext={() => setCurrentStep(5)} onBack={() => setCurrentStep(3)} />
       case 5:
-        return <div>스타일 선택 단계 (구현 예정)</div>
+        return <TourStyle onNext={() => setCurrentStep(6)} onBack={() => setCurrentStep(4)} />
       case 6:
         return <div>장소 유형 선택 단계 (구현 예정)</div>
       case 7:

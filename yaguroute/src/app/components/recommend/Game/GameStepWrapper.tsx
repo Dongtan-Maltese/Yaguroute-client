@@ -8,9 +8,10 @@ type Props = {
   onBack: () => void
   currentStep: number
   nextDisabled?: boolean
+  heading?: string
 }
 
-export default function GameStepWrapper({ children, onNext, onBack, currentStep, nextDisabled }: Props) {
+export default function GameStepWrapper({ children, onNext, onBack, currentStep, nextDisabled, heading }: Props) {
   return (
     <div className="min-h-screen bg-[#F4F1EC]">
       <div className="mx-auto max-w-md min-h-screen">
@@ -28,10 +29,14 @@ export default function GameStepWrapper({ children, onNext, onBack, currentStep,
         <StepIndicator currentStep={currentStep} />
 
         <div className="px-4 mt-4">
-          <h1 className="text-2xl font-extrabold leading-snug text-neutral-900">
-            언제,
-            <br />
-            어떤 경기를 직관하실건가요?
+          <h1 className="text-2xl font-extrabold leading-snug text-neutral-900 whitespace-pre-line">
+            {heading ?? (
+              <>
+                언제,
+                <br />
+                어떤 경기를 직관하실건가요?
+              </>
+            )}
           </h1>
         </div>
 
