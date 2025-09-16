@@ -67,6 +67,7 @@ export default function FloatingNav() {
           cursor: 'pointer',
           whiteSpace: 'nowrap',
         }}
+        onClick={() => router.push('/recommend')}
       >
         ✨ 야구루트 제조
       </button>
