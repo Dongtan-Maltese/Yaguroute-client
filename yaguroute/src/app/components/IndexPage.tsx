@@ -148,6 +148,9 @@ export default function IndexPage() {
             textAlign: 'center',
             minWidth: '200px',
           }}
+          onClick={() => {
+            router.push('/recommend')
+          }}
         >
           <div style={{ fontSize: '24px', marginBottom: '8px' }}>🧪</div>
           <h3
