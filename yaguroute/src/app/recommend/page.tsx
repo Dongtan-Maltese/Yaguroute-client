@@ -8,6 +8,7 @@ import StartLocation from '../components/recommend/StartLocation'
 import TimeSelection from '../components/recommend/TimeSelection'
 import ArrivalTime from '../components/recommend/ArrivalTime'
 import TourStyle from '../components/recommend/TourStyle'
+import LocationType from '../components/recommend/LocationType'
 
 export default function RecommendPage(): JSX.Element {
   const router = useRouter()
@@ -42,7 +43,7 @@ export default function RecommendPage(): JSX.Element {
       case 5:
         return <TourStyle onNext={() => setCurrentStep(6)} onBack={() => setCurrentStep(4)} />
       case 6:
-        return <div>장소 유형 선택 단계 (구현 예정)</div>
+        return <LocationType onNext={() => setCurrentStep(7)} onBack={() => setCurrentStep(5)} />
       case 7:
         return <div>결과 화면 (구현 예정)</div>
       default:

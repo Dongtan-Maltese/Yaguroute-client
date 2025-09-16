@@ -9,9 +9,10 @@ type Props = {
   currentStep: number
   nextDisabled?: boolean
   heading?: string
+  footerHidden?: boolean
 }
 
-export default function GameStepWrapper({ children, onNext, onBack, currentStep, nextDisabled, heading }: Props) {
+export default function GameStepWrapper({ children, onNext, onBack, currentStep, nextDisabled, heading, footerHidden }: Props) {
   return (
     <div className="min-h-screen bg-[#F4F1EC]">
       <div className="mx-auto max-w-md min-h-screen">
@@ -44,21 +45,22 @@ export default function GameStepWrapper({ children, onNext, onBack, currentStep,
           {children}
         </div>
 
-        {/* Fixed footer CTA constrained to content width */}
-        <div className="fixed left-1/2 bottom-0 z-50 w-full max-w-md -translate-x-1/2 bg-[#F4F1EC] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0)+12px)] shadow-[0_-6px_12px_rgba(0,0,0,0.04)]">
-          <button
-            onClick={onNext}
-            disabled={Boolean(nextDisabled)}
-            className={
-              'w-full rounded-2xl py-4 font-semibold transition-colors ' +
-              (nextDisabled
-                ? 'bg-neutral-200 text-neutral-500'
-                : 'bg-orange-500 text-white')
-            }
-          >
-            다음으로
-          </button>
-        </div>
+        {!footerHidden && (
+          <div className="fixed left-1/2 bottom-0 z-50 w-full max-w-md -translate-x-1/2 bg-[#F4F1EC] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0)+12px)] shadow-[0_-6px_12px_rgba(0,0,0,0.04)]">
+            <button
+              onClick={onNext}
+              disabled={Boolean(nextDisabled)}
+              className={
+                'w-full rounded-2xl py-4 font-semibold transition-colors ' +
+                (nextDisabled
+                  ? 'bg-neutral-200 text-neutral-500'
+                  : 'bg-orange-500 text-white')
+              }
+            >
+              다음으로
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
