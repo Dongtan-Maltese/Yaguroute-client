@@ -1,6 +1,6 @@
 const dummyGames = [
   { id: 1, time: '18:30', home: '삼성', away: 'LG', stadium: '잠실 야구장' },
-  { id: 2, time: '18:30', home: '두산', away: 'SSG', stadium: 'SSG 랜더스파크' },
+  { id: 2, time: '18:30', home: '한화', away: 'SSG', stadium: '한화생명 이글스파크' },
   { id: 3, time: '10:00', home: '키움', away: '롯데', stadium: '사직 야구장' },
 ]
 
