@@ -5,7 +5,7 @@ import GameStepWrapper from '../Game/GameStepWrapper'
 import { Plus, GripVertical, X } from 'lucide-react'
 
 const CANDIDATES = [
-  { id: 'sight', label: '관광' },
+  { id: 'tour', label: '관광' },
   { id: 'food', label: '맛집' },
   { id: 'cafe', label: '카페' },
 ]
@@ -19,7 +19,7 @@ type Props = {
 
 export default function LocationType({ onNext, onBack }: Props) {
   const [items, setItems] = useState<Item[]>([
-    { id: 'sight-1', label: '관광' },
+    { id: 'tour-1', label: '관광' },
     { id: 'food-1', label: '맛집' },
     { id: 'cafe-1', label: '카페' },
   ])
