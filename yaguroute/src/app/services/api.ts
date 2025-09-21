@@ -1,4 +1,4 @@
-import { RouteStyle } from "../contexts/RecommendContext"
+import { RouteStyle } from "@/app/contexts/RecommendContext"
 
 export interface RouteRequest {
   gameInfo: {
