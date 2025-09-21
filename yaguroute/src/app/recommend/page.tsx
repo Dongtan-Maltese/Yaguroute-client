@@ -10,6 +10,7 @@ import ArrivalTime from '../components/recommend/ArrivalTime'
 import TourStyle from '../components/recommend/TourStyle'
 import LocationType from '../components/recommend/LocationType'
 import Result from '../components/recommend/Result'
+import { RecommendProvider } from '../contexts/RecommendContext'
 
 const SAMPLE: any = {
   routeId: 'route_1758124338680_e9fcl5m08',
@@ -91,15 +92,17 @@ export default function RecommendPage(): JSX.Element {
       case 6:
         return <LocationType onNext={() => setCurrentStep(7)} onBack={() => setCurrentStep(5)} />
       case 7:
-        return <Result onNext={() => {}} onBack={() => setCurrentStep(6)} data={SAMPLE} />
+        return <Result onNext={() => {}} onBack={() => setCurrentStep(6)} />
       default:
         return <GameSelection onNext={() => setCurrentStep(2)} onBack={handleBack} />
     }
   }
   
   return (
-    <div className="bg-[#F4F1EC]">
-      {renderStep()}
-    </div>
+    <RecommendProvider>
+      <div className="bg-[#F4F1EC]">
+        {renderStep()}
+      </div>
+    </RecommendProvider>
   )
 }
