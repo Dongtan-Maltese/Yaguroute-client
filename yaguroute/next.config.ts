@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://yagu-route.engineer-hama.shop/api/:path*", 
+        destination: "https://yagu-route.engineer-hama.shop/:path*", 
       },
     ];
   },
