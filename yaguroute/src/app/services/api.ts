@@ -45,7 +45,7 @@ export interface RouteResponse {
 
 // TODO. .env 파일로 분리
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
-const  API_BASE_URL = "https://yagu-route.engineer-hama.shop"
+const  API_BASE_URL = "https://yagu-route.engineer-hama.shop/api"
 
 export async function createRoute(data: RouteRequest): Promise<RouteResponse> {
   const response = await fetch(`${API_BASE_URL}/yagu-routes`, {
