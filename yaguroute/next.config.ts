@@ -9,6 +9,14 @@ const withPWA = require("next-pwa")({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://144.24.68.253:1220/:path*", 
+      },
+    ];
+  },
   async headers() {
     return [
       {
