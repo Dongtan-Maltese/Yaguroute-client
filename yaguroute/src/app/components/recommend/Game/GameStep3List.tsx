@@ -1,3 +1,5 @@
+import { TEAM_CODE_MAP } from '@/app/constants/teams'
+
 const dummyGames = [
   { id: 1, time: '18:30', home: '삼성', away: 'LG', stadium: '잠실 야구장' },
   { id: 2, time: '18:30', home: '한화', away: 'SSG', stadium: '한화생명 이글스파크' },
@@ -23,7 +25,17 @@ export default function GameStep3List({
       <div className="flex-1 overflow-y-auto pr-1 space-y-3">
         {dummyGames.map((g) => (
           <label key={g.id} className="block">
-            <input type="radio" name="game" className="peer hidden" onChange={() => onSelectGame(g)} />
+            <input
+              type="radio"
+              name="game"
+              className="peer hidden"
+              onChange={() =>
+                onSelectGame({
+                  ...g,
+                  homeTeam: TEAM_CODE_MAP[g.home], 
+                })
+              }
+            />
             <div className="rounded-2xl border border-[#EFECE7] bg-white px-4 py-3 shadow-sm peer-checked:bg-orange-500 peer-checked:text-white">
               <div className="flex items-center gap-3">
                 <span className="inline-flex min-w-14 justify-center rounded-full px-3 py-1 text-sm font-semibold bg-neutral-100 text-neutral-700 peer-checked:bg-white/20 peer-checked:text-white">

@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react'
 import GameStepWrapper from '../Game/GameStepWrapper'
 import { MapPin, Search, ChevronRight, X } from 'lucide-react'
+import { useRecommend } from '@/app/contexts/RecommendContext'
 
 const SEOUL_RESULTS = [
   { id: 'seoul-1', name: '서울역', address: '중구 한강대로 405' },
@@ -24,6 +25,7 @@ type Props = {
 }
 
 export default function StartLocation({ onNext, onBack }: Props) {
+  const { updateData } = useRecommend()
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -40,8 +42,25 @@ export default function StartLocation({ onNext, onBack }: Props) {
 
   const hasStartedTyping = query.trim().length > 0
 
+  const handleNext = () => {
+    if (selectedId) {
+      const selected = [...SEOUL_RESULTS, ...DAEJEON_RESULTS].find(p => p.id === selectedId)
+      if (selected) {
+        updateData({
+          departureInfo: {
+            location: selected.name,
+            latitude: selected.name.includes('서울') ? 37.5551 : 36.3315,
+            longitude: selected.name.includes('서울') ? 126.9707 : 127.4342,
+            departureTime: new Date().toISOString(), // This should come from time selection
+          }
+        })
+      }
+    }
+    onNext()
+  }
+
   return (
-    <GameStepWrapper currentStep={2} onNext={onNext} onBack={onBack} nextDisabled={selectedId === null}>
+    <GameStepWrapper currentStep={2} onNext={handleNext} onBack={onBack} nextDisabled={selectedId === null}>
       <p className="text-sm text-neutral-600 mb-2">
         타 지역에서 오는 경우,
         <br />

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import GameStepWrapper from '../Game/GameStepWrapper'
+import { useRecommend } from '@/app/contexts/RecommendContext'
 
 const STYLES = [
   { id: 'around', label: '주변에서 시간 보내기' },
@@ -15,12 +16,27 @@ type Props = {
 }
 
 export default function TourStyle({ onNext, onBack }: Props) {
+  const { updateData } = useRecommend()
   const [selected, setSelected] = useState<string | null>(null)
+
+  const handleNext = () => {
+    if (selected) {
+      const routeStyleMap = {
+        'around': 'AROUND_STADIUM' as const,
+        'near': 'AROUND_STADIUM' as const,
+        'from': 'DEPARTURE_TO_STADIUM' as const,
+      }
+      updateData({
+        routeStyle: routeStyleMap[selected as keyof typeof routeStyleMap]
+      })
+    }
+    onNext()
+  }
 
   return (
     <GameStepWrapper
       currentStep={5}
-      onNext={onNext}
+      onNext={handleNext}
       onBack={onBack}
       nextDisabled={!selected}
       heading={'어디를 중심으로\n야구루트를 제조할까요?'}

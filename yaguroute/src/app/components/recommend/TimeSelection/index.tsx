@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react'
 import GameStepWrapper from '../Game/GameStepWrapper'
 import { Clock, ChevronRight } from 'lucide-react'
+import { useRecommend } from '@/app/contexts/RecommendContext'
 
 type Props = {
   onNext: () => void
@@ -10,11 +11,29 @@ type Props = {
 }
 
 export default function TimeSelection({ onNext, onBack }: Props) {
+  const { updateData, data } = useRecommend()
   const [hour, setHour] = useState<number | null>(null)
   const [minute, setMinute] = useState<number | null>(null)
   const [ampm, setAmpm] = useState<'오전' | '오후' | null>(null)
 
   const nextDisabled = hour === null || minute === null || ampm === null
+
+  const handleNext = () => {
+    if (hour && minute && ampm) {
+      // Convert to 24-hour format and create ISO string
+      const hour24 = ampm === '오후' && hour !== 12 ? hour + 12 : ampm === '오전' && hour === 12 ? 0 : hour
+      const today = new Date()
+      today.setHours(hour24, minute, 0, 0)
+      
+      updateData({
+        departureInfo: {
+          ...data.departureInfo,
+          departureTime: today.toISOString()
+        } as any
+      })
+    }
+    onNext()
+  }
 
   const hours = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), [])
   const minutes = useMemo(() => Array.from({ length: 12 }, (_, i) => i * 5), []) // 0,5,...55
@@ -22,7 +41,7 @@ export default function TimeSelection({ onNext, onBack }: Props) {
   return (
     <GameStepWrapper
       currentStep={3}
-      onNext={onNext}
+      onNext={handleNext}
       onBack={onBack}
       nextDisabled={nextDisabled}
       heading={'대전역에\n몇시에 도착하나요?'}

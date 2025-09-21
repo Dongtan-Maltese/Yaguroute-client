@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import GameStepWrapper from '../Game/GameStepWrapper'
 import { Plus, GripVertical, X } from 'lucide-react'
+import { useRecommend } from '@/app/contexts/RecommendContext'
 
 const CANDIDATES = [
   { id: 'tour', label: '관광' },
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export default function LocationType({ onNext, onBack }: Props) {
+  const { updateData } = useRecommend()
   const [items, setItems] = useState<Item[]>([
     { id: 'tour-1', label: '관광' },
     { id: 'food-1', label: '맛집' },
@@ -27,6 +29,22 @@ export default function LocationType({ onNext, onBack }: Props) {
 
   const canAdd = items.length < 5
   const nextDisabled = items.length === 0
+
+  const handleNext = () => {
+    const categories = items.map(item => {
+      const categoryMap = {
+        '관광': 'TOUR',
+        '맛집': 'MEAL', 
+        '카페': 'CAFE',
+      }
+      return categoryMap[item.label as keyof typeof categoryMap] || 'TOUR'
+    })
+    
+    updateData({
+      visitCategories: categories
+    })
+    onNext()
+  }
 
   const handleRemove = (id: string) => setItems((prev) => prev.filter((it) => it.id !== id))
 
@@ -42,7 +60,7 @@ export default function LocationType({ onNext, onBack }: Props) {
   return (
     <GameStepWrapper
       currentStep={6}
-      onNext={onNext}
+      onNext={handleNext}
       onBack={onBack}
       nextDisabled={nextDisabled}
       heading={'경기 전, 가고 싶은 장소를\n순서대로 추가해주세요'}
