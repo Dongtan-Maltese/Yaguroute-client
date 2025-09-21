@@ -132,15 +132,13 @@ export default function Result({ onNext, onBack }: Props) {
 
   const heading = `${routeData.routeName}`
 
-  const points: MapPoint[] = useMemo(
-    () =>
-      routeData.routeSteps
-        .filter((s): s is any => s.type === 'PLACE')
-        .map((s) => ({ lat: s.place.latitude, lng: s.place.longitude, title: s.place.name })),
-    [routeData.routeSteps]
-  )
+  const points: MapPoint[] = routeData
+    ? routeData.routeSteps
+        .filter((s): s is PlaceStep => s.type === 'PLACE')
+        .map((s) => ({ lat: s.place.latitude, lng: s.place.longitude, title: s.place.name }))
+    : []
 
-
+  
   return (
     <GameStepWrapper currentStep={7} onNext={onNext} onBack={onBack} nextDisabled heading={heading} footerHidden>
       {/* Top banner */}

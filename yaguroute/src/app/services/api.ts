@@ -43,7 +43,9 @@ export interface RouteResponse {
   status: string
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+// TODO. .env 파일로 분리
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+const  API_BASE_URL = "http://144.24.68.253:1220"
 
 export async function createRoute(data: RouteRequest): Promise<RouteResponse> {
   const response = await fetch(`${API_BASE_URL}/yagu-routes`, {
