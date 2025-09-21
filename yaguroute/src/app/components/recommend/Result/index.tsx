@@ -64,14 +64,26 @@ export default function Result({ onNext, onBack }: Props) {
   useEffect(() => {
     const fetchRoute = async () => {
       try {
-        setLoading(true)
+        if (
+          !recommendData.gameInfo ||
+          !recommendData.routeStyle ||
+          !recommendData.visitCategories ||
+          !recommendData.stadiumArrivalTime ||
+          !recommendData.departureInfo
+        ) {
+          setError('Missing required data')
+          setLoading(false)
+          return
+        }
+        
         const response = await createRoute({
-          gameInfo: recommendData.gameInfo!,
-          routeStyle: recommendData.routeStyle!,
-          visitCategories: recommendData.visitCategories!,
-          stadiumArrivalTime: recommendData.stadiumArrivalTime!,
-          departureInfo: recommendData.departureInfo!,
+          gameInfo: recommendData.gameInfo,
+          routeStyle: recommendData.routeStyle, 
+          visitCategories: recommendData.visitCategories,
+          stadiumArrivalTime: recommendData.stadiumArrivalTime,
+          departureInfo: recommendData.departureInfo,
         })
+        
         setRouteData(response)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to create route')

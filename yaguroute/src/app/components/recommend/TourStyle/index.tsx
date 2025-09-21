@@ -22,12 +22,13 @@ export default function TourStyle({ onNext, onBack }: Props) {
   const handleNext = () => {
     if (selected) {
       const routeStyleMap = {
-        'around': 'AROUND_STADIUM' as const,
-        'near': 'AROUND_STADIUM' as const,
-        'from': 'DEPARTURE_TO_STADIUM' as const,
-      }
+        around: 'STADIUM_NEARBY',
+        near: 'DEPARTURE_NEARBY',
+        from: 'DEPARTURE_TO_STADIUM',
+      } as const
+
       updateData({
-        routeStyle: routeStyleMap[selected as keyof typeof routeStyleMap]
+        routeStyle: routeStyleMap[selected as keyof typeof routeStyleMap],
       })
     }
     onNext()

@@ -14,9 +14,18 @@ export interface DepartureInfo {
   departureTime: string
 }
 
+export const ROUTE_STYLE = {
+  STADIUM_NEARBY: 'STADIUM_NEARBY',
+  DEPARTURE_NEARBY: 'DEPARTURE_NEARBY',
+  DEPARTURE_TO_STADIUM: 'DEPARTURE_TO_STADIUM',
+  NO_PREFERENCE: 'NO_PREFERENCE',
+} as const
+
+export type RouteStyle = typeof ROUTE_STYLE[keyof typeof ROUTE_STYLE]
+
 export interface RecommendData {
   gameInfo?: GameInfo
-  routeStyle?: 'DEPARTURE_TO_STADIUM' | 'AROUND_STADIUM' | 'STADIUM_TO_DEPARTURE'
+  routeStyle?: RouteStyle
   visitCategories?: string[]
   stadiumArrivalTime?: string
   departureInfo?: DepartureInfo

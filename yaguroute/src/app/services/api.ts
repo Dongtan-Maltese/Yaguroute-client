@@ -1,9 +1,11 @@
+import { RouteStyle } from "../contexts/RecommendContext"
+
 export interface RouteRequest {
   gameInfo: {
     homeTeam: string
     gameTime: string
   }
-  routeStyle: 'DEPARTURE_TO_STADIUM' | 'AROUND_STADIUM' | 'STADIUM_TO_DEPARTURE'
+  routeStyle: RouteStyle
   visitCategories: string[]
   stadiumArrivalTime: string
   departureInfo: {
