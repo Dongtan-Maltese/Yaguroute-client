@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://144.24.68.253:1220/:path*", 
+        destination: "https://144.24.68.253.nip.io:1220/:path*", 
       },
     ];
   },
