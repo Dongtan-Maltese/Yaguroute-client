@@ -53,17 +53,15 @@ const PlaceItem = ({
         </div>
       )}
 
-      {/* 우측 정보 영역 */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column'}}>
-        {/* 첫 번째 줄: 장소명 + 카테고리 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
           <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{place.name}</div>
+          {/* TODO. 카테고리 받아와서 표시해주기 */}
           <div style={{ fontSize: '12px', color: '#FF6B35', border: '1px solid #FF6B35', padding: '2px 6px', borderRadius: '4px' }}>
             카테고리
           </div>
         </div>
 
-        {/* 하단 정보: 설명 등 */}
         {place.description && (
           <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.4 }}>
             {place.description}
@@ -75,6 +73,7 @@ const PlaceItem = ({
 }
 
 export default function PlaceList({ places, onPlaceSelect }: PlaceListProps) {
+  // TODO. 더미 데이터 제거
   const data: Place[] =
     places && places.length > 0
       ? places
