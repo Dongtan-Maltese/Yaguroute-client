@@ -15,9 +15,9 @@ interface SearchBottomSheetProps {
   onPlaceSelect: (place: Place) => void
   viewMode: 'map' | 'list'
   onViewModeChange: (mode: 'map' | 'list') => void
-  currentKeyword: string // 현재 검색어
-  currentLocation: { lat: number; lng: number } // 현재 지도 중심 좌표
-  onTeamSearchRequest?: (team: string) => void // 팀별 검색 요청 콜백
+  currentKeyword: string
+  currentLocation: { lat: number; lng: number }
+  onTeamSearchRequest?: (team: string) => void
 }
 
 interface BaseballTeam {
@@ -52,19 +52,56 @@ export default function SearchBottomSheet({
   onTeamSearchRequest,
 }: SearchBottomSheetProps) {
   const [activeTab, setActiveTab] = useState<'fan' | 'baseball'>('fan')
-  const [selectedTeam, setSelectedTeam] = useState<BaseballTeam>(
-    baseballTeams[0]
-  )
+  const [selectedTeam, setSelectedTeam] = useState<BaseballTeam>(baseballTeams[0])
   const [showTeamSelector, setShowTeamSelector] = useState(false)
   const [baseballRestaurants, setBaseballRestaurants] = useState<Place[]>([])
   const [isLoadingBaseball, setIsLoadingBaseball] = useState(false)
 
-  // 야구선수 맛집 데이터 로드
-  const loadBaseballRestaurants = async (teamCode: string) => {
-    if (!currentKeyword.trim()) {
+  // ✅ 팬 추천 키워드 필터 (전체, 맛집, 카페, 관광)
+  const fanCategories = ['전체', '맛집', '카페', '관광']
+  const [fanCategory, setFanCategory] = useState('전체')
+  const [filteredFanResults, setFilteredFanResults] = useState<Place[]>([])
+  const [isLoadingFan, setIsLoadingFan] = useState(false)
+
+  // ✅ 팬 추천 키워드 검색 API 호출
+  const loadFanCategoryResults = async (category: string) => {
+    if (category === '전체') {
+      setFilteredFanResults(searchResults)
       return
     }
 
+    setIsLoadingFan(true)
+    try {
+      const params = new URLSearchParams({
+        keyword: category,
+      })
+      const apiUrl = `https://yagu-route.engineer-hama.shop/search/keyword?${params.toString()}`
+      const response = await fetch(apiUrl)
+
+      if (!response.ok) {
+        throw new Error(`팬 추천 API 요청 실패: ${response.status}`)
+      }
+
+      const data = await response.json()
+      setFilteredFanResults(data.items || [])
+    } catch (error) {
+      console.error('팬 추천 키워드 검색 실패:', error)
+      setFilteredFanResults([])
+    } finally {
+      setIsLoadingFan(false)
+    }
+  }
+
+  // ✅ 카테고리 변경 시 API 호출
+  useEffect(() => {
+    if (activeTab === 'fan') {
+      loadFanCategoryResults(fanCategory)
+    }
+  }, [fanCategory, activeTab])
+
+  // 야구선수 맛집 데이터 로드
+  const loadBaseballRestaurants = async (teamCode: string) => {
+    if (!currentKeyword.trim()) return
     setIsLoadingBaseball(true)
     try {
       const params = new URLSearchParams({
@@ -73,14 +110,9 @@ export default function SearchBottomSheet({
         longitude: currentLocation.lng.toString(),
         team: teamCode,
       })
-
       const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search?${params.toString()}`
       const response = await fetch(apiUrl)
-
-      if (!response.ok) {
-        throw new Error(`API 요청 실패: ${response.status}`)
-      }
-
+      if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
       const data = await response.json()
       setBaseballRestaurants(data.items || [])
     } catch (error) {
@@ -105,21 +137,18 @@ export default function SearchBottomSheet({
     }
   }, [activeTab])
 
-  if (!isVisible) {
-    return null
-  }
+  if (!isVisible) return null
 
-  const currentData = activeTab === 'fan' ? searchResults : baseballRestaurants
+  const currentData =
+    activeTab === 'fan' ? filteredFanResults : baseballRestaurants
 
   const handleTeamSelect = (team: BaseballTeam) => {
     setSelectedTeam(team)
     setShowTeamSelector(false)
-    // 팀 변경 시 자동으로 데이터 재로드 (useEffect에서 처리됨)
   }
 
   const handleTabChange = (tab: 'fan' | 'baseball') => {
     setActiveTab(tab)
-    // 야구선수 맛집 탭으로 전환 시 부모 컴포넌트에 알림
     if (tab === 'baseball' && onTeamSearchRequest) {
       onTeamSearchRequest(selectedTeam.code)
     }
@@ -144,7 +173,7 @@ export default function SearchBottomSheet({
           transition: 'transform 0.3s ease-in-out',
         }}
       >
-        {/* 바텀시트 핸들 */}
+        {/* 핸들 */}
         <div
           style={{
             width: '40px',
@@ -226,7 +255,43 @@ export default function SearchBottomSheet({
           </button>
         </div>
 
-        {/* 구단 선택 - 야구선수 맛집 탭에서만 표시 */}
+        {/* ✅ 팬 추천 칩 영역 */}
+        {activeTab === 'fan' && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              overflowX: 'auto',
+              padding: '0 20px 12px 20px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {fanCategories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setFanCategory(category)}
+                style={{
+                  flexShrink: 0,
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border:
+                    fanCategory === category
+                      ? '1px solid #FF6B35'
+                      : '1px solid #ddd',
+                  backgroundColor:
+                    fanCategory === category ? '#FFF3EE' : 'white',
+                  color: fanCategory === category ? '#FF6B35' : '#555',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* 구단 선택 (야구선수 맛집 전용) */}
         {activeTab === 'baseball' && (
           <div style={{ padding: '0 20px 16px 20px' }}>
             <button
@@ -273,7 +338,7 @@ export default function SearchBottomSheet({
         )}
 
         {/* 로딩 인디케이터 */}
-        {isLoadingBaseball && activeTab === 'baseball' && (
+        {(isLoadingBaseball || isLoadingFan) && (
           <div
             style={{
               padding: '40px 20px',
@@ -281,12 +346,12 @@ export default function SearchBottomSheet({
               color: '#666',
             }}
           >
-            <div style={{ fontSize: '14px' }}>맛집을 찾고 있습니다...</div>
+            <div style={{ fontSize: '14px' }}>검색 중입니다...</div>
           </div>
         )}
 
         {/* 장소 목록 */}
-        {!isLoadingBaseball && (
+        {!isLoadingBaseball && !isLoadingFan && (
           <>
             {currentData.length > 0 ? (
               viewMode === 'list' && (
@@ -306,7 +371,7 @@ export default function SearchBottomSheet({
                 <div style={{ fontSize: '14px' }}>
                   {activeTab === 'baseball'
                     ? '다른 구단을 선택해보세요'
-                    : '다른 검색어로 시도해보세요'}
+                    : '다른 키워드를 선택해보세요'}
                 </div>
               </div>
             )}
@@ -323,7 +388,7 @@ export default function SearchBottomSheet({
         />
       </div>
 
-      {/* 지도보기 플로팅 버튼 */}
+      {/* 플로팅 버튼 */}
       {viewMode === 'list' && onViewModeChange && (
         <FloatingButton
           label="지도보기"
@@ -332,11 +397,11 @@ export default function SearchBottomSheet({
         />
       )}
 
-      {/* 목록보기 플로팅 버튼 */}
       {viewMode === 'map' &&
         onViewModeChange &&
         currentData.length > 0 &&
-        !isLoadingBaseball && (
+        !isLoadingBaseball &&
+        !isLoadingFan && (
           <FloatingButton
             label="목록보기"
             icon="📋"
