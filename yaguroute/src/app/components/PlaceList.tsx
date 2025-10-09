@@ -17,10 +17,10 @@ const PlaceItem = ({
     <div
       onClick={onClick}
       style={{
-        padding: '16px 20px',
+        display: 'flex',
+        padding: '12px 20px',
         borderBottom: '1px solid #f0f0f0',
         cursor: 'pointer',
-        fontSize: '14px',
         transition: 'background-color 0.2s ease',
       }}
       onMouseEnter={(e) => {
@@ -30,57 +30,85 @@ const PlaceItem = ({
         e.currentTarget.style.backgroundColor = 'white'
       }}
     >
-      {/* 이미지가 있으면 표시 */}
+      {/* 좌측 이미지 */}
       {place.imageUrl && (
         <div
           style={{
-            width: '100%',
-            height: '120px',
+            width: '100px',
+            height: '100px',
             borderRadius: '8px',
             overflow: 'hidden',
-            marginBottom: '12px',
+            flexShrink: 0,
+            marginRight: '16px',
           }}
         >
           <img
             src={place.imageUrl}
             alt={place.name}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e) => {
-              // 이미지 로드 실패 시 숨기기
               e.currentTarget.parentElement!.style.display = 'none'
             }}
           />
         </div>
       )}
 
-      {/* 장소명 */}
-      <div
-        style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '16px', color: '#333' }}
-      >
-        {place.name}
-      </div>
-
-      {/* 설명 */}
-      {place.description && (
-        <div style={{ color: '#666', fontSize: '13px', lineHeight: '1.4' }}>
-          {place.description}
+      {/* 우측 정보 영역 */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column'}}>
+        {/* 첫 번째 줄: 장소명 + 카테고리 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+          <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{place.name}</div>
+          <div style={{ fontSize: '12px', color: '#FF6B35', border: '1px solid #FF6B35', padding: '2px 6px', borderRadius: '4px' }}>
+            카테고리
+          </div>
         </div>
-      )}
+
+        {/* 하단 정보: 설명 등 */}
+        {place.description && (
+          <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.4 }}>
+            {place.description}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
 export default function PlaceList({ places, onPlaceSelect }: PlaceListProps) {
-  const hasData = places.length > 0
+  const data: Place[] =
+    places && places.length > 0
+      ? places
+      : [
+          {
+            id: '1',
+            name: '맛있는 치킨집',
+            latitude: '37.501',
+            longitude: '127.039',
+            description: '바삭하고 촉촉한 치킨이 인기인 곳',
+            imageUrl: 'https://picsum.photos/100/100?random=1',
+          },
+          {
+            id: '2',
+            name: '분위기 좋은 카페',
+            latitude: '37.502',
+            longitude: '127.037',
+            description: '커피와 디저트가 맛있는 힙한 카페',
+            imageUrl: 'https://picsum.photos/100/100?random=2',
+          },
+          {
+            id: '3',
+            name: '핫플레이스 맛집',
+            latitude: '37.564',
+            longitude: '126.903',
+            description: 'SNS에서 유명한 인기 맛집',
+            imageUrl: 'https://picsum.photos/100/100?random=3',
+          },
+        ]
 
   return (
     <div style={{ padding: '0 0 20px 0' }}>
-      {hasData ? (
-        places.map((place) => (
+      {data.length > 0 ? (
+        data.map((place) => (
           <PlaceItem
             key={place.id}
             place={place}
