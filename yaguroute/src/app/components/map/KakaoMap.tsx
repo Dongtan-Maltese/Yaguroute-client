@@ -120,17 +120,10 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
         selectedInfoWindowRef.current = null
       }
     }
-
-    const searchPlaces = async (keyword: string, teamCode?: string) => {
-      if (!map) {
-        console.error('지도가 아직 로드되지 않았습니다')
-        return
-      }
     
-      if (!keyword.trim()) {
-        console.error('검색어가 비어있습니다')
-        return
-      }
+    const searchPlaces = async (keyword: string, teamCode?: string) => {
+      if (!map) return
+      if (!keyword.trim()) return
     
       removeMarkers()
       setIsLoading(true)
@@ -148,52 +141,18 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
           latitude: currentLat.toString(),
           longitude: currentLng.toString(),
         })
-    
         if (teamCode) params.append('team', teamCode)
     
-        // 🔹 1️⃣  먼저 백엔드 검색 시도
         const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search?${params.toString()}`
         const response = await fetch(apiUrl)
-    
-        if (!response.ok) {
-          throw new Error(`백엔드 API 요청 실패: ${response.status}`)
-        }
-    
+        if (!response.ok) throw new Error(`백엔드 API 요청 실패: ${response.status}`)
         const data: SearchResponse = await response.json()
+        const results = data.items ?? []
     
-        let results = data.items ?? []
-    
-        // 🔹 2️⃣  백엔드 결과가 없으면 카카오맵 fallback 검색
-        if (results.length === 0) {
-          console.log('백엔드 검색 결과 없음 → 카카오맵 검색 시도')
-    
-          const kakaoPlaces = new window.kakao.maps.services.Places()
-          const kakaoResults: Place[] = await new Promise((resolve) => {
-            kakaoPlaces.keywordSearch(keyword, (data: any[], status: string) => {
-              if (status === window.kakao.maps.services.Status.OK) {
-                const places: Place[] = data.map((item) => ({
-                  name: item.place_name,
-                  latitude: item.y,
-                  longitude: item.x,
-                  id: item.id,
-                  description: item.address_name,
-                  imageUrl: '', // 카카오는 이미지가 없으니 비워둠
-                }))
-                resolve(places)
-              } else {
-                resolve([])
-              }
-            })
-          })
-    
-          results = kakaoResults
-        }
+        removeMarkers()
     
         if (results.length > 0) {
           setSearchResults(results)
-          setShowBottomSheet(true)
-          setViewMode('map')
-    
           const newMarkers: any[] = []
           const bounds = new window.kakao.maps.LatLngBounds()
     
@@ -204,41 +163,42 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
                 parseFloat(place.longitude)
               ),
               title: place.name,
-              image: new window.kakao.maps.MarkerImage(
-                iconMarker.src,
-                new window.kakao.maps.Size(28, 28)
-              ),
+              image: new window.kakao.maps.MarkerImage(iconMarker.src, new window.kakao.maps.Size(28, 28)),
             })
     
             marker.setMap(map)
             newMarkers.push(marker)
     
             window.kakao.maps.event.addListener(marker, 'click', () => {
-              handleMarkerClick(place)
+              handlePlaceSelect(place)
             })
     
-            bounds.extend(
-              new window.kakao.maps.LatLng(
-                parseFloat(place.latitude),
-                parseFloat(place.longitude)
-              )
-            )
+            bounds.extend(new window.kakao.maps.LatLng(
+              parseFloat(place.latitude),
+              parseFloat(place.longitude)
+            ))
           })
     
           setMarkers(newMarkers)
           map.setBounds(bounds)
         } else {
           setSearchResults([])
-          setShowBottomSheet(false)
-          alert('검색 결과가 없습니다.')
         }
+    
+        setShowBottomSheet(true)
+        setViewMode('map')
       } catch (error) {
         console.error('검색 중 오류 발생:', error)
-        alert('검색 중 오류가 발생했습니다. 다시 시도해주세요.')
       } finally {
         setIsLoading(false)
       }
     }    
+    
+    const handlePlaceSelect = (place: Place) => {
+      setViewMode('map')
+      setShowBottomSheet(true)
+      handleMarkerClick(place)
+    }     
 
     const handleCloseBottomSheet = () => {
       setShowBottomSheet(false)
@@ -299,11 +259,6 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
       })
       infowindow.open(map, newSelectedMarker)
       selectedInfoWindowRef.current = infowindow
-    }
-
-    const handlePlaceSelect = (place: Place) => {
-      setViewMode('map')
-      handleMarkerClick(place)
     }
 
     const handleTeamSearchRequest = (teamCode: string) => {
