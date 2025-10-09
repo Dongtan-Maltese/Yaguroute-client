@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import KakaoMap from '../components/KakaoMap'
-import iconHome from '../../images/map/icon-home.png'
+import KakaoMap from '@/app/components/map/KakaoMap'
+import iconHome from '@/images/map/icon-home.png'
 import { useRouter } from 'next/navigation'
 
 export default function MapPage() {
@@ -57,10 +57,10 @@ export default function MapPage() {
           }}
           onClick={onNavigateToHome}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#555'
+            e.currentTarget.style.backgroundColor = '#f5f5f5'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#333'
+            e.currentTarget.style.backgroundColor = 'transparent'
           }}
         >
           <img

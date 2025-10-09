@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import iconPlayer from '../../images/map/icon-player.png'
-import iconPlayerActive from '../../images/map/icon-player-active.png'
+import iconPlayer from '@/images/map/icon-player.png'
+import iconPlayerActive from '@/images/map/icon-player-active.png'
 
 const CategoryTabs = () => {
   const [activeTab, setActiveTab] = useState<'fan' | 'player'>('fan')

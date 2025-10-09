@@ -10,7 +10,7 @@ export const baseballRestaurants = [
     category: '한식',
     description: '한화 이글스 채은성 선수가 자주 찾는 고기집',
     rating: 4.7,
-    team: 'hanwha',
+    team: 'hanhwa',
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ export const baseballRestaurants = [
     category: '한식',
     description: '전 한화 이글스 김태균 선수 단골 한식당',
     rating: 4.8,
-    team: 'hanwha',
+    team: 'hanhwa',
   },
   {
     id: 3,
@@ -34,7 +34,7 @@ export const baseballRestaurants = [
     category: '카페',
     description: '한화 출신 류현진이 추천한 브런치 카페',
     rating: 4.6,
-    team: 'hanwha',
+    team: 'hanhwa',
   },
 
   // LG 트윈스

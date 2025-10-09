@@ -2,10 +2,10 @@
 
 import React from 'react'
 import { ChevronRight, Search } from 'lucide-react'
-import FloatingNav from '../components/common/FloatingNav'
-import iconPlayerActive from '../../images/map/icon-player-active.png'
-import iconPlayers from '../../images/home/icon-players.png'
-import CategoryTabs from '../components/CategoryTabs'
+import FloatingNav from '@/app/components/common/FloatingNav'
+import iconPlayerActive from '@/images/map/icon-player-active.png'
+import iconPlayers from '@/images/home/icon-players.png'
+import CategoryTabs from '@/app/components/map/CategoryTabs'
 import { dummyPlaces } from '@/data/playerRecommendPlace'
 import { dummyRoutes } from '@/data/routes'
 
