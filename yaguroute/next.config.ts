@@ -9,6 +9,14 @@ const withPWA = require("next-pwa")({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://yagu-route.engineer-hama.shop/:path*", 
+      },
+    ];
+  },
   async headers() {
     return [
       {

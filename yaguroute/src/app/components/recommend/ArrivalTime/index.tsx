@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import GameStepWrapper from '../Game/GameStepWrapper'
+import { useRecommend } from '@/app/contexts/RecommendContext'
 
 const OPTIONS = [
   { id: 'h1', label: '1시간 전에 도착' },
@@ -15,12 +16,26 @@ type Props = {
 }
 
 export default function ArrivalTime({ onNext, onBack }: Props) {
+  const { updateData, data } = useRecommend()
   const [selected, setSelected] = useState<string | null>(null)
+
+  const handleNext = () => {
+    if (selected && data.gameInfo) {
+      const gameTime = new Date(data.gameInfo.gameTime)
+      const hoursBefore = parseInt(selected.replace('h', ''))
+      const arrivalTime = new Date(gameTime.getTime() - (hoursBefore * 60 * 60 * 1000))
+      
+      updateData({
+        stadiumArrivalTime: arrivalTime.toISOString()
+      })
+    }
+    onNext()
+  }
 
   return (
     <GameStepWrapper
       currentStep={4}
-      onNext={onNext}
+      onNext={handleNext}
       onBack={onBack}
       nextDisabled={!selected}
       heading={'경기 시작 몇 시간 전에\n경기장에 도착하시겠어요?'}
