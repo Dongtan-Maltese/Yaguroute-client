@@ -1,25 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
-import { baseballRestaurants } from '../../data/baseballRestaurants'
+import React, { useState, useEffect } from 'react'
 import iconPlayerActive from '../../images/map/icon-player-active.png'
 import iconPlayer from '../../images/map/icon-player.png'
 import TeamSelector from './TeamSelector'
-import PlaceList from './PlaceList' // 새로 분리한 컴포넌트
+import PlaceList from './PlaceList'
 import FloatingButton from './common/FloatingButton'
-
-interface Place {
-  place_name: string
-  address_name: string
-  road_address_name: string
-  x: string
-  y: string
-  category?: string
-  description?: string
-  rating?: number
-  image?: string
-  team?: string
-}
+import { Place } from '@/app/types/map'
 
 interface SearchBottomSheetProps {
   isVisible: boolean
@@ -28,6 +15,9 @@ interface SearchBottomSheetProps {
   onPlaceSelect: (place: Place) => void
   viewMode: 'map' | 'list'
   onViewModeChange: (mode: 'map' | 'list') => void
+  currentKeyword: string // 현재 검색어
+  currentLocation: { lat: number; lng: number } // 현재 지도 중심 좌표
+  onTeamSearchRequest?: (team: string) => void // 팀별 검색 요청 콜백
 }
 
 interface BaseballTeam {
@@ -38,7 +28,7 @@ interface BaseballTeam {
 }
 
 const baseballTeams: BaseballTeam[] = [
-  { name: '한화 이글스', code: 'hanwha', logo: 'Eagles', color: '#FC4E00' },
+  { name: '한화 이글스', code: 'hanhwa', logo: 'Eagles', color: '#FC4E00' },
   { name: 'LG 트윈스', code: 'lg', logo: 'Twins', color: '#C30452' },
   { name: '키움 히어로즈', code: 'kiwoom', logo: 'Heroes', color: '#6E1A29' },
   { name: 'SSG 랜더스', code: 'ssg', logo: 'Landers', color: '#CE0E2D' },
@@ -57,26 +47,82 @@ export default function SearchBottomSheet({
   onPlaceSelect,
   viewMode,
   onViewModeChange,
+  currentKeyword,
+  currentLocation,
+  onTeamSearchRequest,
 }: SearchBottomSheetProps) {
   const [activeTab, setActiveTab] = useState<'fan' | 'baseball'>('fan')
   const [selectedTeam, setSelectedTeam] = useState<BaseballTeam>(
     baseballTeams[0]
   )
   const [showTeamSelector, setShowTeamSelector] = useState(false)
+  const [baseballRestaurants, setBaseballRestaurants] = useState<Place[]>([])
+  const [isLoadingBaseball, setIsLoadingBaseball] = useState(false)
+
+  // 야구선수 맛집 데이터 로드
+  const loadBaseballRestaurants = async (teamCode: string) => {
+    if (!currentKeyword.trim()) {
+      return
+    }
+
+    setIsLoadingBaseball(true)
+    try {
+      const params = new URLSearchParams({
+        keyword: currentKeyword,
+        latitude: currentLocation.lat.toString(),
+        longitude: currentLocation.lng.toString(),
+        team: teamCode,
+      })
+
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search?${params.toString()}`
+      const response = await fetch(apiUrl)
+
+      if (!response.ok) {
+        throw new Error(`API 요청 실패: ${response.status}`)
+      }
+
+      const data = await response.json()
+      setBaseballRestaurants(data.items || [])
+    } catch (error) {
+      console.error('야구선수 맛집 로드 실패:', error)
+      setBaseballRestaurants([])
+    } finally {
+      setIsLoadingBaseball(false)
+    }
+  }
+
+  // 야구선수 맛집 탭 활성화 시 데이터 로드
+  useEffect(() => {
+    if (activeTab === 'baseball' && isVisible) {
+      loadBaseballRestaurants(selectedTeam.code)
+    }
+  }, [activeTab, selectedTeam.code, isVisible])
+
+  // 팬 추천 탭으로 돌아올 때 초기화
+  useEffect(() => {
+    if (activeTab === 'fan') {
+      setBaseballRestaurants([])
+    }
+  }, [activeTab])
 
   if (!isVisible) {
     return null
   }
 
-  const filteredRestaurants = baseballRestaurants.filter(
-    (restaurant) => restaurant.team === selectedTeam.code
-  )
-
-  const currentData = activeTab === 'fan' ? searchResults : filteredRestaurants
+  const currentData = activeTab === 'fan' ? searchResults : baseballRestaurants
 
   const handleTeamSelect = (team: BaseballTeam) => {
     setSelectedTeam(team)
     setShowTeamSelector(false)
+    // 팀 변경 시 자동으로 데이터 재로드 (useEffect에서 처리됨)
+  }
+
+  const handleTabChange = (tab: 'fan' | 'baseball') => {
+    setActiveTab(tab)
+    // 야구선수 맛집 탭으로 전환 시 부모 컴포넌트에 알림
+    if (tab === 'baseball' && onTeamSearchRequest) {
+      onTeamSearchRequest(selectedTeam.code)
+    }
   }
 
   return (
@@ -121,7 +167,7 @@ export default function SearchBottomSheet({
           }}
         >
           <button
-            onClick={() => setActiveTab('fan')}
+            onClick={() => handleTabChange('fan')}
             style={{
               flex: 1,
               padding: '16px 0',
@@ -149,7 +195,7 @@ export default function SearchBottomSheet({
             팬 추천 BEST
           </button>
           <button
-            onClick={() => setActiveTab('baseball')}
+            onClick={() => handleTabChange('baseball')}
             style={{
               flex: 1,
               padding: '16px 0',
@@ -180,51 +226,91 @@ export default function SearchBottomSheet({
           </button>
         </div>
 
-        {/* 구단 선택 */}
-        <div style={{ padding: '0 20px 16px 20px' }}>
-          <button
-            onClick={() => setShowTeamSelector(true)}
+        {/* 구단 선택 - 야구선수 맛집 탭에서만 표시 */}
+        {activeTab === 'baseball' && (
+          <div style={{ padding: '0 20px 16px 20px' }}>
+            <button
+              onClick={() => setShowTeamSelector(true)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '1px solid #eee',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '16px',
+              }}
+            >
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
+              >
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    backgroundColor: selectedTeam.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                  }}
+                >
+                  {selectedTeam.logo}
+                </div>
+                <span style={{ fontWeight: 'bold', color: '#333' }}>
+                  {selectedTeam.name}
+                </span>
+              </div>
+              <span style={{ color: '#666', fontSize: '14px' }}>▼</span>
+            </button>
+          </div>
+        )}
+
+        {/* 로딩 인디케이터 */}
+        {isLoadingBaseball && activeTab === 'baseball' && (
+          <div
             style={{
-              width: '100%',
-              padding: '12px 16px',
-              border: 0,
-              borderRadius: '8px',
-              backgroundColor: 'white',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              fontSize: '16px',
-              gap: '8px',
+              padding: '40px 20px',
+              textAlign: 'center',
+              color: '#666',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ fontSize: '14px' }}>맛집을 찾고 있습니다...</div>
+          </div>
+        )}
+
+        {/* 장소 목록 */}
+        {!isLoadingBaseball && (
+          <>
+            {currentData.length > 0 ? (
+              viewMode === 'list' && (
+                <PlaceList places={currentData} onPlaceSelect={onPlaceSelect} />
+              )
+            ) : (
               <div
                 style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  backgroundColor: selectedTeam.color,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  color: 'white',
+                  padding: '40px 20px',
+                  textAlign: 'center',
+                  color: '#999',
                 }}
               >
-                {selectedTeam.logo}
+                <div style={{ fontSize: '16px', marginBottom: '8px' }}>
+                  검색 결과가 없습니다
+                </div>
+                <div style={{ fontSize: '14px' }}>
+                  {activeTab === 'baseball'
+                    ? '다른 구단을 선택해보세요'
+                    : '다른 검색어로 시도해보세요'}
+                </div>
               </div>
-              <span style={{ fontWeight: 'bold', color: '#333' }}>
-                {selectedTeam.name}
-              </span>
-            </div>
-            <span style={{ color: '#666', fontSize: '14px' }}>▼</span>
-          </button>
-        </div>
-
-        {/* 장소 목록 - 목록보기 모드일 때만 표시 */}
-        {viewMode === 'list' && (
-          <PlaceList places={currentData} onPlaceSelect={onPlaceSelect} />
+            )}
+          </>
         )}
 
         {/* 구단 선택 모달 */}
@@ -236,6 +322,7 @@ export default function SearchBottomSheet({
           onClose={() => setShowTeamSelector(false)}
         />
       </div>
+
       {/* 지도보기 플로팅 버튼 */}
       {viewMode === 'list' && onViewModeChange && (
         <FloatingButton
@@ -246,13 +333,16 @@ export default function SearchBottomSheet({
       )}
 
       {/* 목록보기 플로팅 버튼 */}
-      {viewMode === 'map' && onViewModeChange && currentData.length > 0 && (
-        <FloatingButton
-          label="목록보기"
-          icon="📋"
-          onClick={() => onViewModeChange('list')}
-        />
-      )}
+      {viewMode === 'map' &&
+        onViewModeChange &&
+        currentData.length > 0 &&
+        !isLoadingBaseball && (
+          <FloatingButton
+            label="목록보기"
+            icon="📋"
+            onClick={() => onViewModeChange('list')}
+          />
+        )}
     </>
   )
 }

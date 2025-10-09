@@ -57,10 +57,10 @@ export default function MapPage() {
           }}
           onClick={onNavigateToHome}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#555'
+            e.currentTarget.style.backgroundColor = '#f5f5f5'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#333'
+            e.currentTarget.style.backgroundColor = 'transparent'
           }}
         >
           <img

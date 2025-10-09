@@ -1,17 +1,5 @@
 import React from 'react'
-
-interface Place {
-  place_name: string
-  address_name: string
-  road_address_name: string
-  x: string
-  y: string
-  category?: string
-  description?: string
-  rating?: number
-  image?: string
-  team?: string
-}
+import { Place } from '@/app/types/map'
 
 interface PlaceListProps {
   places: Place[]
@@ -42,34 +30,44 @@ const PlaceItem = ({
         e.currentTarget.style.backgroundColor = 'white'
       }}
     >
-      <div
-        style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '16px' }}
-      >
-        {place.place_name}
-      </div>
-      {place.category && (
+      {/* 이미지가 있으면 표시 */}
+      {place.imageUrl && (
         <div
           style={{
-            color: '#FF6B35',
-            fontSize: '12px',
-            marginBottom: '2px',
-            fontWeight: 'bold',
+            width: '100%',
+            height: '120px',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            marginBottom: '12px',
           }}
         >
-          {place.category}
+          <img
+            src={place.imageUrl}
+            alt={place.name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+            onError={(e) => {
+              // 이미지 로드 실패 시 숨기기
+              e.currentTarget.parentElement!.style.display = 'none'
+            }}
+          />
         </div>
       )}
-      {place.description && (
-        <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
-          {place.description}
-        </div>
-      )}
-      <div style={{ color: '#666', fontSize: '13px' }}>
-        {place.road_address_name || place.address_name}
+
+      {/* 장소명 */}
+      <div
+        style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '16px', color: '#333' }}
+      >
+        {place.name}
       </div>
-      {place.rating && (
-        <div style={{ color: '#FF6B35', fontSize: '12px', marginTop: '4px' }}>
-          ⭐ {place.rating}
+
+      {/* 설명 */}
+      {place.description && (
+        <div style={{ color: '#666', fontSize: '13px', lineHeight: '1.4' }}>
+          {place.description}
         </div>
       )}
     </div>
@@ -82,9 +80,9 @@ export default function PlaceList({ places, onPlaceSelect }: PlaceListProps) {
   return (
     <div style={{ padding: '0 0 20px 0' }}>
       {hasData ? (
-        places.map((place, index) => (
+        places.map((place) => (
           <PlaceItem
-            key={index}
+            key={place.id}
             place={place}
             onClick={() => onPlaceSelect(place)}
           />
@@ -97,7 +95,7 @@ export default function PlaceList({ places, onPlaceSelect }: PlaceListProps) {
             color: '#666',
           }}
         >
-          '검색 결과가 없습니다.'
+          검색 결과가 없습니다.
         </div>
       )}
     </div>
