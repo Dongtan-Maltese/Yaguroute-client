@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import KakaoMap from '../components/KakaoMap'
-import iconHome from '../../images/map/icon-home.png'
+import KakaoMap from '@/app/components/map/KakaoMap'
+import iconHome from '@/images/map/icon-home.png'
 import { useRouter } from 'next/navigation'
 
 export default function MapPage() {

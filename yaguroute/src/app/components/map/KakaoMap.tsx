@@ -7,9 +7,9 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react'
-import SearchBottomSheet from './SearchBottomSheet'
-import iconMarker from '../../images/map/icon-marker.png'
-import iconMarkerActive from '../../images/map/icon-marker-active.png'
+import SearchBottomSheet from '@/app/components/map/SearchBottomSheet'
+import iconMarker from '@/images/map/icon-marker.png'
+import iconMarkerActive from '@/images/map/icon-marker-active.png'
 import { Place } from '@/app/types/map'
 
 interface KakaoMapProps {

@@ -3,12 +3,12 @@
 import React, { JSX, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RecommendStep } from '@/app/types'
-import GameSelection from '../components/recommend/Game'
-import StartLocation from '../components/recommend/StartLocation'
-import TimeSelection from '../components/recommend/TimeSelection'
-import ArrivalTime from '../components/recommend/ArrivalTime'
-import TourStyle from '../components/recommend/TourStyle'
-import LocationType from '../components/recommend/LocationType'
+import GameSelection from '@/app/components/recommend/Game'
+import StartLocation from '@/app/components/recommend/StartLocation'
+import TimeSelection from '@/app/components/recommend/TimeSelection'
+import ArrivalTime from '@/app/components/recommend/ArrivalTime'
+import TourStyle from '@/app/components/recommend/TourStyle'
+import LocationType from '@/app/components/recommend/LocationType'
 
 export default function RecommendPage(): JSX.Element {
   const router = useRouter()
