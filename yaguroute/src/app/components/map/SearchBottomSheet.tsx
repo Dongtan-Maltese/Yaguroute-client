@@ -8,6 +8,7 @@ import PlaceList from '@/app/components/map/PlaceList'
 import FloatingButton from '@/app/components/common/FloatingButton'
 import { Place } from '@/app/types/map'
 import PlaceDetail from '@/app/components/map/PlaceDetail'
+import WriteReview from '@/app/components/map/WriteReview'
 
 interface SearchBottomSheetProps {
   searchResults: Place[]
@@ -63,6 +64,7 @@ export default function SearchBottomSheet({
 
   // ✅ 선택된 장소 상태
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
+  const [showWriteReview, setShowWriteReview] = useState(false)
 
   // 바텀시트 상태 관리
   const [isExpanded, setIsExpanded] = useState(false) // 기본적으로 닫힌 상태
@@ -273,7 +275,7 @@ export default function SearchBottomSheet({
           left: 0,
           right: 0,
           zIndex: 1000,
-          backgroundColor: 'white',
+          backgroundColor: '#F4F1EC',
           borderTopLeftRadius: bottomSheetHeight >= getFullscreenHeight() ? '0px' : '20px',
           borderTopRightRadius: bottomSheetHeight >= getFullscreenHeight() ? '0px' : '20px',
           boxShadow: bottomSheetHeight >= getFullscreenHeight() ? 'none' : '0 -4px 20px rgba(0,0,0,0.15)',
@@ -282,7 +284,7 @@ export default function SearchBottomSheet({
           transition: isDragging ? 'none' : 'height 0.3s ease-in-out, border-radius 0.3s ease-in-out',
         }}
       >
-        {/* 핸들 또는 전체화면 닫기 버튼 */}
+        {/* 핸들 또는 전체화면 헤더 */}
         {bottomSheetHeight < getFullscreenHeight() ? (
           <div
             style={{
@@ -302,12 +304,30 @@ export default function SearchBottomSheet({
           <div
             style={{
               display: 'flex',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
               alignItems: 'center',
               padding: '12px 20px',
               borderBottom: '1px solid #eee',
             }}
           >
+            <button
+              onClick={() => setSelectedPlace(null)}
+              style={{
+                width: '24px',
+                height: '24px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontSize: '18px',
+                color: '#666',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              ←
+            </button>
+            <div style={{ width: '24px' }}></div>
             <button
               onClick={() => {
                 setBottomSheetHeight(getExpandedHeight())
@@ -333,7 +353,11 @@ export default function SearchBottomSheet({
 
         {/* ✅ 상세보기 모드 */}
         {selectedPlace ? (
-          <PlaceDetail place={selectedPlace} onBack={() => setSelectedPlace(null)} />
+          <PlaceDetail 
+            place={selectedPlace} 
+            onBack={() => setSelectedPlace(null)} 
+            onWriteReview={() => setShowWriteReview(true)}
+          />
         ) : (
           <>
             {/* 탭 헤더 */}
@@ -534,6 +558,19 @@ export default function SearchBottomSheet({
         !isLoadingFan && (
           <FloatingButton label="목록보기" icon="📋" onClick={() => handleViewModeChange('list')} />
         )}
+
+      {/* 리뷰 작성 모달 */}
+      {showWriteReview && selectedPlace && (
+        <WriteReview
+          placeName={selectedPlace.name}
+          onBack={() => setShowWriteReview(false)}
+          onSubmit={(reviewData) => {
+            console.log('리뷰 작성:', reviewData)
+            setShowWriteReview(false)
+            // 여기에 실제 리뷰 제출 로직 구현
+          }}
+        />
+      )}
     </>
   )
 }
