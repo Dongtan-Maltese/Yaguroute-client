@@ -1,4 +1,5 @@
 import { Place } from "@/app/types/map";
+import emptyImage from "@/images/map/empty.png"
 
 const PlaceDetail = ({ place, onBack }: { place: Place; onBack: () => void }) => (
     <div style={{ padding: '0 20px 20px 20px' }}>
@@ -17,23 +18,21 @@ const PlaceDetail = ({ place, onBack }: { place: Place; onBack: () => void }) =>
       </button>
   
       <div style={{ display: 'flex', gap: '16px' }}>
-        {place.imageUrl && (
-          <div
-            style={{
-              width: '120px',
-              height: '120px',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              flexShrink: 0,
-            }}
-          >
-            <img
-              src={place.imageUrl}
-              alt={place.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-        )}
+        <div
+          style={{
+            width: '120px',
+            height: '120px',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            flexShrink: 0,
+          }}
+        >
+          <img
+            src={place.imageUrl || emptyImage.src}
+            alt={place.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
             <div style={{ fontWeight: 'bold', fontSize: '18px', color: '#333' }}>{place.name}</div>

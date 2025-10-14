@@ -75,7 +75,7 @@ export default function SearchBottomSheet({
     setIsLoadingFan(true)
     try {
       const params = new URLSearchParams({ keyword: category })
-      const apiUrl = `https://yagu-route.engineer-hama.shop/search/keyword?${params.toString()}`
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search/keyword?${params.toString()}`
       const response = await fetch(apiUrl)
       if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
       const data = await response.json()
@@ -93,16 +93,13 @@ export default function SearchBottomSheet({
   }, [fanCategory, activeTab])
 
   const loadBaseballRestaurants = async (teamCode: string) => {
-    if (!currentKeyword.trim()) return
     setIsLoadingBaseball(true)
     try {
       const params = new URLSearchParams({
-        keyword: currentKeyword,
-        latitude: currentLocation.lat.toString(),
-        longitude: currentLocation.lng.toString(),
+        type: 'PLAYER_MAT_ZIP',
         team: teamCode,
       })
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search?${params.toString()}`
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/suggestions?${params.toString()}`
       const response = await fetch(apiUrl)
       if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
       const data = await response.json()
