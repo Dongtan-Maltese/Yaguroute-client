@@ -1,5 +1,6 @@
 import React from 'react'
 import { Place } from '@/app/types/map'
+import emptyImage from '@/images/map/empty.png'
 
 interface PlaceListProps {
   places: Place[]
@@ -31,27 +32,22 @@ const PlaceItem = ({
       }}
     >
       {/* 좌측 이미지 */}
-      {place.imageUrl && (
-        <div
-          style={{
-            width: '100px',
-            height: '100px',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            flexShrink: 0,
-            marginRight: '16px',
-          }}
-        >
-          <img
-            src={place.imageUrl}
-            alt={place.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={(e) => {
-              e.currentTarget.parentElement!.style.display = 'none'
-            }}
-          />
-        </div>
-      )}
+      <div
+        style={{
+          width: '100px',
+          height: '100px',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          flexShrink: 0,
+          marginRight: '16px',
+        }}
+      >
+        <img
+          src={place.imageUrl || emptyImage.src}
+          alt={place.name}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column'}}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>

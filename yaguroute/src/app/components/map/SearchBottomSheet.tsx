@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import iconPlayerActive from '@/images/map/icon-player-active.png'
 import iconPlayer from '@/images/map/icon-player.png'
 import TeamSelector from '@/app/components/map/TeamSelector'
@@ -8,9 +8,9 @@ import PlaceList from '@/app/components/map/PlaceList'
 import FloatingButton from '@/app/components/common/FloatingButton'
 import { Place } from '@/app/types/map'
 import PlaceDetail from '@/app/components/map/PlaceDetail'
+import WriteReview from '@/app/components/map/WriteReview'
 
 interface SearchBottomSheetProps {
-  isVisible: boolean
   searchResults: Place[]
   onClose: () => void
   onPlaceSelect: (place: Place) => void
@@ -42,7 +42,6 @@ const baseballTeams: BaseballTeam[] = [
 ]
 
 export default function SearchBottomSheet({
-  isVisible,
   searchResults,
   onClose,
   onPlaceSelect,
@@ -65,6 +64,111 @@ export default function SearchBottomSheet({
 
   // ✅ 선택된 장소 상태
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
+  const [showWriteReview, setShowWriteReview] = useState(false)
+
+  // 바텀시트 상태 관리
+  const [isExpanded, setIsExpanded] = useState(false) // 기본적으로 닫힌 상태
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStartY, setDragStartY] = useState(0)
+  const [dragStartHeight, setDragStartHeight] = useState(0)
+  const bottomSheetRef = useRef<HTMLDivElement>(null)
+  const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
+
+  // 높이 상태 정의
+  const CLOSED_HEIGHT = 175 // 닫힌 상태 높이 (필터/구단 선택까지 포함)
+  const getExpandedHeight = () => (typeof window !== 'undefined' ? window.innerHeight * 0.4 : 300)
+  const getFullscreenHeight = () => (typeof window !== 'undefined' ? window.innerHeight : 600)
+
+  // 초기 높이 설정
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBottomSheetHeight(CLOSED_HEIGHT)
+    }
+  }, [])
+
+  // 드래그 이벤트 핸들러
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+    setDragStartY(e.clientY)
+    setDragStartHeight(bottomSheetHeight)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+    setDragStartY(e.touches[0].clientY)
+    setDragStartHeight(bottomSheetHeight)
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return
+    
+    const deltaY = dragStartY - e.clientY
+    const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
+    setBottomSheetHeight(newHeight)
+  }
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isDragging) return
+    
+    const deltaY = dragStartY - e.touches[0].clientY
+    const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
+    setBottomSheetHeight(newHeight)
+  }
+
+  const handleMouseUp = () => {
+    if (!isDragging) return
+    
+    setIsDragging(false)
+    
+    // 높이에 따른 상태 결정
+    if (bottomSheetHeight < CLOSED_HEIGHT + 50) {
+      setBottomSheetHeight(CLOSED_HEIGHT)
+      setIsExpanded(false)
+    } else if (bottomSheetHeight > getFullscreenHeight() * 0.8) {
+      setBottomSheetHeight(getFullscreenHeight())
+      setIsExpanded(true)
+    } else {
+      setBottomSheetHeight(getExpandedHeight())
+      setIsExpanded(true)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return
+    
+    setIsDragging(false)
+    
+    // 높이에 따른 상태 결정
+    if (bottomSheetHeight < CLOSED_HEIGHT + 50) {
+      setBottomSheetHeight(CLOSED_HEIGHT)
+      setIsExpanded(false)
+    } else if (bottomSheetHeight > getFullscreenHeight() * 0.8) {
+      setBottomSheetHeight(getFullscreenHeight())
+      setIsExpanded(true)
+    } else {
+      setBottomSheetHeight(getExpandedHeight())
+      setIsExpanded(true)
+    }
+  }
+
+  // 전역 이벤트 리스너 등록
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener('touchmove', handleTouchMove, { passive: false })
+      document.addEventListener('touchend', handleTouchEnd)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [isDragging, dragStartY, dragStartHeight, bottomSheetHeight])
 
   // 팬 추천 API 로드
   const loadFanCategoryResults = async (category: string) => {
@@ -75,7 +179,7 @@ export default function SearchBottomSheet({
     setIsLoadingFan(true)
     try {
       const params = new URLSearchParams({ keyword: category })
-      const apiUrl = `https://yagu-route.engineer-hama.shop/search/keyword?${params.toString()}`
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search/keyword?${params.toString()}`
       const response = await fetch(apiUrl)
       if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
       const data = await response.json()
@@ -93,16 +197,13 @@ export default function SearchBottomSheet({
   }, [fanCategory, activeTab])
 
   const loadBaseballRestaurants = async (teamCode: string) => {
-    if (!currentKeyword.trim()) return
     setIsLoadingBaseball(true)
     try {
       const params = new URLSearchParams({
-        keyword: currentKeyword,
-        latitude: currentLocation.lat.toString(),
-        longitude: currentLocation.lng.toString(),
+        type: 'PLAYER_MAT_ZIP',
         team: teamCode,
       })
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search?${params.toString()}`
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/suggestions?${params.toString()}`
       const response = await fetch(apiUrl)
       if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
       const data = await response.json()
@@ -116,14 +217,12 @@ export default function SearchBottomSheet({
   }
 
   useEffect(() => {
-    if (activeTab === 'baseball' && isVisible) loadBaseballRestaurants(selectedTeam.code)
-  }, [activeTab, selectedTeam.code, isVisible])
+    if (activeTab === 'baseball') loadBaseballRestaurants(selectedTeam.code)
+  }, [activeTab, selectedTeam.code])
 
   useEffect(() => {
     if (activeTab === 'fan') setBaseballRestaurants([])
   }, [activeTab])
-
-  if (!isVisible) return null
 
   const currentData = activeTab === 'fan' ? filteredFanResults : baseballRestaurants
 
@@ -138,46 +237,127 @@ export default function SearchBottomSheet({
     if (tab === 'baseball' && onTeamSearchRequest) onTeamSearchRequest(selectedTeam.code)
   }
 
+  const handleViewModeChange = (mode: 'map' | 'list') => {
+    onViewModeChange(mode)
+    if (mode === 'list') {
+      // 목록보기 클릭 시 바텀시트 열기
+      setBottomSheetHeight(getExpandedHeight())
+      setIsExpanded(true)
+    } else {
+      // 지도보기 클릭 시 바텀시트 닫기
+      setBottomSheetHeight(CLOSED_HEIGHT)
+      setIsExpanded(false)
+    }
+  }
+
   const handlePlaceSelect = (place: Place) => {
     setSelectedPlace(place)
     onPlaceSelect(place)
   }
 
+  const handleToggleExpanded = () => {
+    if (isExpanded) {
+      setBottomSheetHeight(CLOSED_HEIGHT)
+      setIsExpanded(false)
+    } else {
+      setBottomSheetHeight(getExpandedHeight())
+      setIsExpanded(true)
+    }
+  }
+
   return (
     <>
       <div
+        ref={bottomSheetRef}
         style={{
           position: 'absolute',
           bottom: 0,
           left: 0,
           right: 0,
           zIndex: 1000,
-          backgroundColor: 'white',
-          borderTopLeftRadius: '20px',
-          borderTopRightRadius: '20px',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
-          maxHeight: '60%',
+          backgroundColor: '#F4F1EC',
+          borderTopLeftRadius: bottomSheetHeight >= getFullscreenHeight() ? '0px' : '20px',
+          borderTopRightRadius: bottomSheetHeight >= getFullscreenHeight() ? '0px' : '20px',
+          boxShadow: bottomSheetHeight >= getFullscreenHeight() ? 'none' : '0 -4px 20px rgba(0,0,0,0.15)',
+          height: `${bottomSheetHeight}px`,
           overflowY: 'auto',
-          transform: isVisible ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.3s ease-in-out',
+          transition: isDragging ? 'none' : 'height 0.3s ease-in-out, border-radius 0.3s ease-in-out',
         }}
       >
-        {/* 핸들 */}
-        <div
-          style={{
-            width: '40px',
-            height: '4px',
-            backgroundColor: '#ddd',
-            borderRadius: '2px',
-            margin: '12px auto',
-            cursor: 'pointer',
-          }}
-          onClick={onClose}
-        />
+        {/* 핸들 또는 전체화면 헤더 */}
+        {bottomSheetHeight < getFullscreenHeight() ? (
+          <div
+            style={{
+              width: '40px',
+              height: '4px',
+              backgroundColor: '#ddd',
+              borderRadius: '2px',
+              margin: '12px auto',
+              cursor: 'grab',
+              userSelect: 'none',
+            }}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            onClick={handleToggleExpanded}
+          />
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '12px 20px',
+              borderBottom: '1px solid #eee',
+            }}
+          >
+            <button
+              onClick={() => setSelectedPlace(null)}
+              style={{
+                width: '24px',
+                height: '24px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontSize: '18px',
+                color: '#666',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              ←
+            </button>
+            <div style={{ width: '24px' }}></div>
+            <button
+              onClick={() => {
+                setBottomSheetHeight(getExpandedHeight())
+                setIsExpanded(true)
+              }}
+              style={{
+                width: '24px',
+                height: '24px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                fontSize: '18px',
+                color: '#666',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* ✅ 상세보기 모드 */}
         {selectedPlace ? (
-          <PlaceDetail place={selectedPlace} onBack={() => setSelectedPlace(null)} />
+          <PlaceDetail 
+            place={selectedPlace} 
+            onBack={() => setSelectedPlace(null)} 
+            onWriteReview={() => setShowWriteReview(true)}
+          />
         ) : (
           <>
             {/* 탭 헤더 */}
@@ -256,7 +436,14 @@ export default function SearchBottomSheet({
                 {fanCategories.map((category) => (
                   <button
                     key={category}
-                    onClick={() => setFanCategory(category)}
+                    onClick={() => {
+                      setFanCategory(category)
+                      // 칩 클릭 시 바텀시트 열기
+                      if (!isExpanded) {
+                        setBottomSheetHeight(getExpandedHeight())
+                        setIsExpanded(true)
+                      }
+                    }}
                     style={{
                       flexShrink: 0,
                       padding: '8px 16px',
@@ -278,7 +465,14 @@ export default function SearchBottomSheet({
             {activeTab === 'baseball' && (
               <div style={{ padding: '0 20px 16px 20px' }}>
                 <button
-                  onClick={() => setShowTeamSelector(true)}
+                  onClick={() => {
+                    setShowTeamSelector(true)
+                    // 구단 선택 시 바텀시트 열기
+                    if (!isExpanded) {
+                      setBottomSheetHeight(getExpandedHeight())
+                      setIsExpanded(true)
+                    }
+                  }}
                   style={{
                     width: '100%',
                     padding: '12px 16px',
@@ -317,19 +511,20 @@ export default function SearchBottomSheet({
             )}
 
             {/* 로딩 */}
-            {(isLoadingBaseball || isLoadingFan) && (
+            {isExpanded && (isLoadingBaseball || isLoadingFan) && (
               <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
                 <div style={{ fontSize: '14px' }}>검색 중입니다...</div>
               </div>
             )}
 
             {/* 장소 리스트 */}
-            {!isLoadingBaseball && !isLoadingFan && currentData.length > 0 && (
+            {isExpanded && !isLoadingBaseball && !isLoadingFan && currentData.length > 0 && (
               <PlaceList places={currentData} onPlaceSelect={handlePlaceSelect} />
             )}
 
             {/* 결과 없음 */}
-            {!isLoadingBaseball &&
+            {isExpanded &&
+              !isLoadingBaseball &&
               !isLoadingFan &&
               currentData.length === 0 && (
                 <div style={{ padding: '40px 20px', textAlign: 'center', color: '#999' }}>
@@ -353,17 +548,29 @@ export default function SearchBottomSheet({
       </div>
 
       {/* 플로팅 버튼 */}
-      {viewMode === 'list' && onViewModeChange && (
-        <FloatingButton label="지도보기" icon="🗺️" onClick={() => onViewModeChange('map')} />
+      {viewMode === 'list' && (
+        <FloatingButton label="지도보기" icon="🗺️" onClick={() => handleViewModeChange('map')} />
       )}
 
       {viewMode === 'map' &&
-        onViewModeChange &&
         currentData.length > 0 &&
         !isLoadingBaseball &&
         !isLoadingFan && (
-          <FloatingButton label="목록보기" icon="📋" onClick={() => onViewModeChange('list')} />
+          <FloatingButton label="목록보기" icon="📋" onClick={() => handleViewModeChange('list')} />
         )}
+
+      {/* 리뷰 작성 모달 */}
+      {showWriteReview && selectedPlace && (
+        <WriteReview
+          placeName={selectedPlace.name}
+          onBack={() => setShowWriteReview(false)}
+          onSubmit={(reviewData) => {
+            console.log('리뷰 작성:', reviewData)
+            setShowWriteReview(false)
+            // 여기에 실제 리뷰 제출 로직 구현
+          }}
+        />
+      )}
     </>
   )
 }

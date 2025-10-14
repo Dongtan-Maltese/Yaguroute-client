@@ -42,7 +42,7 @@ export default function TeamSelector({
         right: 0,
         bottom: 0,
         zIndex: 10,
-        backgroundColor: 'white',
+        backgroundColor: '#F4F1EC',
         borderTopLeftRadius: '20px',
         borderTopRightRadius: '20px',
         overflowY: 'auto',
