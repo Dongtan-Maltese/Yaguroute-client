@@ -51,7 +51,7 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
     const [markers, setMarkers] = useState<any[]>([])
     const selectedMarkerRef = useRef<any>(null)
     const selectedInfoWindowRef = useRef<any>(null)
-    const [showBottomSheet, setShowBottomSheet] = useState(false)
+    const [showBottomSheet, setShowBottomSheet] = useState(true) // 항상 표시
     const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
     const [isLoading, setIsLoading] = useState(false)
     const [currentKeyword, setCurrentKeyword] = useState('')
@@ -301,7 +301,6 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
         )}
 
         <SearchBottomSheet
-          isVisible={showBottomSheet}
           searchResults={searchResults}
           onClose={handleCloseBottomSheet}
           onPlaceSelect={handlePlaceSelect}
