@@ -65,7 +65,7 @@ export default function SearchBottomSheet({
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
 
   // 바텀시트 상태 관리
-  const [isExpanded, setIsExpanded] = useState(true) // 기본적으로 열린 상태
+  const [isExpanded, setIsExpanded] = useState(false) // 기본적으로 닫힌 상태
   const [isDragging, setIsDragging] = useState(false)
   const [dragStartY, setDragStartY] = useState(0)
   const [dragStartHeight, setDragStartHeight] = useState(0)
@@ -80,7 +80,7 @@ export default function SearchBottomSheet({
   // 초기 높이 설정
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setBottomSheetHeight(getExpandedHeight())
+      setBottomSheetHeight(CLOSED_HEIGHT)
     }
   }, [])
 
@@ -233,6 +233,19 @@ export default function SearchBottomSheet({
     setActiveTab(tab)
     setSelectedPlace(null) // 탭 변경 시 상세 선택 해제
     if (tab === 'baseball' && onTeamSearchRequest) onTeamSearchRequest(selectedTeam.code)
+  }
+
+  const handleViewModeChange = (mode: 'map' | 'list') => {
+    onViewModeChange(mode)
+    if (mode === 'list') {
+      // 목록보기 클릭 시 바텀시트 열기
+      setBottomSheetHeight(getExpandedHeight())
+      setIsExpanded(true)
+    } else {
+      // 지도보기 클릭 시 바텀시트 닫기
+      setBottomSheetHeight(CLOSED_HEIGHT)
+      setIsExpanded(false)
+    }
   }
 
   const handlePlaceSelect = (place: Place) => {
@@ -399,7 +412,14 @@ export default function SearchBottomSheet({
                 {fanCategories.map((category) => (
                   <button
                     key={category}
-                    onClick={() => setFanCategory(category)}
+                    onClick={() => {
+                      setFanCategory(category)
+                      // 칩 클릭 시 바텀시트 열기
+                      if (!isExpanded) {
+                        setBottomSheetHeight(getExpandedHeight())
+                        setIsExpanded(true)
+                      }
+                    }}
                     style={{
                       flexShrink: 0,
                       padding: '8px 16px',
@@ -421,7 +441,14 @@ export default function SearchBottomSheet({
             {activeTab === 'baseball' && (
               <div style={{ padding: '0 20px 16px 20px' }}>
                 <button
-                  onClick={() => setShowTeamSelector(true)}
+                  onClick={() => {
+                    setShowTeamSelector(true)
+                    // 구단 선택 시 바텀시트 열기
+                    if (!isExpanded) {
+                      setBottomSheetHeight(getExpandedHeight())
+                      setIsExpanded(true)
+                    }
+                  }}
                   style={{
                     width: '100%',
                     padding: '12px 16px',
@@ -497,16 +524,15 @@ export default function SearchBottomSheet({
       </div>
 
       {/* 플로팅 버튼 */}
-      {viewMode === 'list' && onViewModeChange && (
-        <FloatingButton label="지도보기" icon="🗺️" onClick={() => onViewModeChange('map')} />
+      {viewMode === 'list' && (
+        <FloatingButton label="지도보기" icon="🗺️" onClick={() => handleViewModeChange('map')} />
       )}
 
       {viewMode === 'map' &&
-        onViewModeChange &&
         currentData.length > 0 &&
         !isLoadingBaseball &&
         !isLoadingFan && (
-          <FloatingButton label="목록보기" icon="📋" onClick={() => onViewModeChange('list')} />
+          <FloatingButton label="목록보기" icon="📋" onClick={() => handleViewModeChange('list')} />
         )}
     </>
   )

@@ -54,7 +54,7 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
     const [showBottomSheet, setShowBottomSheet] = useState(true) // 항상 표시
     const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
     const [isLoading, setIsLoading] = useState(false)
-    const [currentKeyword, setCurrentKeyword] = useState('')
+    const [currentKeyword, setCurrentKeyword] = useState('전체')
     const [currentLocation, setCurrentLocation] = useState(center)
 
     useImperativeHandle(ref, () => ({
@@ -103,6 +103,13 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
 
       return () => mapScript.removeEventListener('load', onLoadKakaoMap)
     }, [center.lat, center.lng, level])
+
+    // 맵 로드 후 초기 검색 실행
+    useEffect(() => {
+      if (map && currentKeyword === '전체') {
+        searchPlaces('전체')
+      }
+    }, [map])
 
     const removeMarkers = () => {
       markers.forEach((marker) => {
