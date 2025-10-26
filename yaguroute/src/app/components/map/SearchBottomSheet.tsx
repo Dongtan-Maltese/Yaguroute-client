@@ -75,7 +75,7 @@ export default function SearchBottomSheet({
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
 
   // 높이 상태 정의
-  const CLOSED_HEIGHT = 240 // 닫힌 상태 높이 (필터/구단 선택까지 포함)
+  const CLOSED_HEIGHT = 200 // 닫힌 상태 높이 (필터/구단 선택까지 포함)
   const getExpandedHeight = () => (typeof window !== 'undefined' ? window.innerHeight * 0.5 : 300)
   const getFullscreenHeight = () => (typeof window !== 'undefined' ? window.innerHeight - 10 : 600) // 하단 여백 10px
 
