@@ -68,7 +68,7 @@ export default function HomePage() {
               outline: 'none',
               flex: 1,
               marginLeft: '8px',
-              fontSize: '14px',
+              fontSize: '16px',
             }}
           />
         </div>

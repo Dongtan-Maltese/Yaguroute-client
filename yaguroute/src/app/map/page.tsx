@@ -103,7 +103,7 @@ export default function MapPage() {
               border: 'none',
               outline: 'none',
               backgroundColor: 'transparent',
-              fontSize: '14px',
+              fontSize: '16px',
               color: '#333',
             }}
           />
