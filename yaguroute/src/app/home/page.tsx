@@ -58,13 +58,12 @@ export default function HomePage() {
         const data = await response.json()
   
         return (data.items || []).map((item: any) => ({
-          placeId: item.id || '',
+          id: item.id || '',
           name: item.name || '',
           latitude: parseFloat(item.latitude ?? 0),
           longitude: parseFloat(item.longitude ?? 0),
-          address: item.description || '',
-          formattedAddress: item.description || '',
-          photoUrls: item.imageUrl ? [item.imageUrl] : [],
+          description: item.description || '',
+          imageUrl: item.imageUrl || '',
           category:
             category === 'MEAL'
               ? '맛집'
@@ -72,6 +71,7 @@ export default function HomePage() {
               ? '카페'
               : '관광',
         }))
+        
       })
   
       const results = await Promise.all(promises)
@@ -100,15 +100,15 @@ export default function HomePage() {
       const data = await response.json()
   
       const items = (data.items || []).map((item: any) => ({
-        placeId: item.id || '',
+        id: item.id || '',
         name: item.name || '',
         latitude: parseFloat(item.latitude ?? 0),
         longitude: parseFloat(item.longitude ?? 0),
-        address: item.description || '',
-        formattedAddress: item.description || '',
-        photoUrls: item.imageUrl ? [item.imageUrl] : [],
-        category: '한화 이글스 맛집',
+        description: item.description || '',
+        imageUrl: item.imageUrl || '',
+        category: '맛집',
       }))
+      
   
       setPlaces(items.slice(0, 10))
       setPlacesCache((prev) => ({ ...prev, player: items.slice(0, 10) }))
@@ -139,7 +139,7 @@ export default function HomePage() {
   // 카테고리 한글 변환
   const getCategoryLabel = (place: Place) => {
     if (activeTab === 'player') {
-      return '한화 이글스 맛집'
+      return '맛집'
     }
     // 팬 추천의 경우 카테고리 표시
     return place.category || '추천'
@@ -238,32 +238,11 @@ export default function HomePage() {
                     backgroundColor: '#ddd',
                   }}
                 >
-                  {place.imageUrl ? (
-                    <img
-                      src={place.imageUrl}
-                      alt={place.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#e9ecef',
-                        color: '#999',
-                        fontSize: '12px',
-                      }}
-                    >
-                      <img
-                        src={place.imageUrl || emptyImage.src}
-                        alt={place.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                  )}
+                  <img
+                    src={place.imageUrl || emptyImage.src}
+                    alt={place.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
                 </div>
                 <div style={{ padding: '8px 12px', textAlign: 'left' }}>
                   <div style={{ fontWeight: 'bold', fontSize: '14px' }}>
