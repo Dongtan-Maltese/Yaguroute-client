@@ -47,6 +47,33 @@ export interface RouteResponse {
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 const  API_BASE_URL = "https://yagu-route.engineer-hama.shop"
 
+export interface LoginRequest {
+  id: string
+  password: string
+}
+
+export interface LoginResponse {
+  accessToken: string
+  refreshToken?: string
+}
+
+export async function login(data: LoginRequest): Promise<LoginResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/login?method=password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    throw new Error(`아이디 또는 비밀번호를 다시 확인해주세요.`)
+  }
+
+  return response.json()
+}
+
 export async function createRoute(data: RouteRequest): Promise<RouteResponse> {
   const response = await fetch(`${API_BASE_URL}/yagu-routes`, {
     method: 'POST',
