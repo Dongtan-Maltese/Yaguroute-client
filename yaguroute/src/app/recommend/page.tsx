@@ -28,7 +28,7 @@ export default function RecommendPage(): JSX.Element {
     if (currentStep > 1) {
       setCurrentStep((prev) => (prev - 1) as RecommendStep)
     } else {
-      router.push('/')
+      router.push('/home')
     }
   }
   
