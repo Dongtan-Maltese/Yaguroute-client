@@ -6,18 +6,26 @@ import { MapPin, Search, ChevronRight, X } from 'lucide-react'
 import { useRecommend } from '@/app/contexts/RecommendContext'
 
 const SEOUL_RESULTS = [
-  { id: 'seoul-1', name: '서울역', address: '중구 한강대로 405' },
-  { id: 'seoul-2', name: '서울역 1호선', address: '지하철 노선' },
-  { id: 'seoul-3', name: '서울역 버스환승센터', address: '용산구 한강대로' },
-  { id: 'seoul-4', name: '서울역 주차장', address: '중구 소월로' },
+  { id: 'seoul-1', name: '서울역', address: '중구 한강대로 405', latitude: 37.556058, longitude: 126.972294 },
+  { id: 'seoul-2', name: '서울역 1호선', address: '지하철 노선', latitude: 37.556058, longitude: 126.972294 },
+  { id: 'seoul-3', name: '서울역 버스환승센터', address: '용산구 한강대로', latitude: 37.556058, longitude: 126.972294 },
+  { id: 'seoul-4', name: '서울역 주차장', address: '중구 소월로', latitude: 37.556058, longitude: 126.972294 },
 ]
 
 const DAEJEON_RESULTS = [
-  { id: 'daejeon-1', name: '대전역', address: '동구 중앙로 215' },
-  { id: 'daejeon-2', name: '대전역 KTX', address: '동구 중앙로 215' },
-  { id: 'daejeon-3', name: '대전역 버스환승센터', address: '동구 대전로' },
-  { id: 'daejeon-4', name: '대전역 주차장', address: '동구 중앙로' },
+  { id: 'daejeon-1', name: '대전역', address: '동구 중앙로 215', latitude: 36.332817, longitude: 127.432120 },
+  { id: 'daejeon-2', name: '대전역 KTX', address: '동구 중앙로 215', latitude: 36.332817, longitude: 127.432120 },
+  { id: 'daejeon-3', name: '대전역 버스환승센터', address: '동구 대전로', latitude: 36.332817, longitude: 127.432120 },
+  { id: 'daejeon-4', name: '대전역 주차장', address: '동구 중앙로', latitude: 36.332817, longitude: 127.432120 },
 ]
+
+const JAMSIL_RESULTS = [
+  { id: 'jamsil-1', name: '잠실 야구장', address: '서울 송파구 올림픽로 25', latitude: 37.514876, longitude: 127.098978 },
+  { id: 'jamsil-2', name: '잠실역', address: '송파구 올림픽로 지하철 2,8호선', latitude: 37.514876, longitude: 127.098978 },
+  { id: 'jamsil-3', name: '잠실역 버스환승센터', address: '송파구 올림픽로 305', latitude: 37.514876, longitude: 127.098978 },
+  { id: 'jamsil-4', name: '잠실 주차장', address: '송파구 올림픽로 27', latitude: 37.514876, longitude: 127.098978 },
+]
+
 
 type Props = {
   onNext: () => void
@@ -34,30 +42,33 @@ export default function StartLocation({ onNext, onBack }: Props) {
     if (!q) return []
     if (q.includes('서울')) return SEOUL_RESULTS
     if (q.includes('대전')) return DAEJEON_RESULTS
+    if (q.includes('잠실')) return JAMSIL_RESULTS
+
     // 키워드 일부만 입력해도 대응
     if (/^seoul|^서울/i.test(q)) return SEOUL_RESULTS
     if (/^dae|^대전/i.test(q)) return DAEJEON_RESULTS
+    if (/잠실|jamsil/i.test(q)) return JAMSIL_RESULTS
     return []
   }, [query])
 
   const hasStartedTyping = query.trim().length > 0
-
+  
   const handleNext = () => {
     if (selectedId) {
-      const selected = [...SEOUL_RESULTS, ...DAEJEON_RESULTS].find(p => p.id === selectedId)
+      const selected = [...SEOUL_RESULTS, ...DAEJEON_RESULTS, ...JAMSIL_RESULTS].find(p => p.id === selectedId)
       if (selected) {
         updateData({
           departureInfo: {
             location: selected.name,
-            latitude: selected.name.includes('서울') ? 37.5551 : 36.3315,
-            longitude: selected.name.includes('서울') ? 126.9707 : 127.4342,
-            departureTime: new Date().toISOString(), // This should come from time selection
+            latitude: selected.latitude,
+            longitude: selected.longitude,
+            departureTime: new Date().toISOString(),
           }
         })
       }
     }
     onNext()
-  }
+  }  
 
   return (
     <GameStepWrapper currentStep={2} onNext={handleNext} onBack={onBack} nextDisabled={selectedId === null}>

@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import GameStepWrapper from '../Game/GameStepWrapper'
 import { MapPin, Flag, Clock, Route as RouteIcon, Image as ImageIcon, Map as MapIcon, List as ListIcon } from 'lucide-react'
 import RouteMap, { MapPoint } from './RouteMap'
 import { useRecommend } from '@/app/contexts/RecommendContext'
 import { createRoute, RouteResponse } from '@/app/services/api'
+import { useRouter } from 'next/navigation'
 
 type PlaceStep = {
   type: 'PLACE'
@@ -55,6 +56,7 @@ function StepBadge({ n }: { n: number }) {
 }
 
 export default function Result({ onNext, onBack }: Props) {
+  const router = useRouter()
   const { data: recommendData } = useRecommend()
   const [routeData, setRouteData] = useState<RouteResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -215,6 +217,14 @@ export default function Result({ onNext, onBack }: Props) {
           })}
         </div>
       )}
+      <div className="mt-6 flex justify-center">
+        <button
+          onClick={() => router.push('/home')}
+          className="px-6 py-3 bg-neutral-900 text-white rounded-2xl shadow hover:bg-neutral-800 transition"
+        >
+          홈으로 이동
+        </button>
+      </div>
     </GameStepWrapper>
   )
 }
