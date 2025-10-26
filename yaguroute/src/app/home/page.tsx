@@ -163,7 +163,7 @@ export default function HomePage() {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 'bold' }}>한화생명 이글스파크</span>
+          <span style={{ fontWeight: 'bold' }}>📍 한화생명 이글스파크</span>
           <img src={iconPlayerActive.src} style={{ width: '32px', height: '32px' }}/>
         </div>
         <div

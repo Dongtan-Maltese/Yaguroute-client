@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ReviewItemProps {
   review: {
@@ -21,13 +21,47 @@ interface ReviewItemProps {
   }
 }
 
+type ReactionType = keyof ReviewItemProps['review']['reactions']
+
+const reactionInfo: Record<ReactionType, { emoji: string; label: string }> = {
+  tip: { emoji: '🍯', label: '꿀팁감사' },
+  angry: { emoji: '😤', label: '부글부글' },
+  foodie: { emoji: '🤤', label: '쩝쩝박사' },
+  agree: { emoji: '👍', label: '인정' },
+  like: { emoji: '❤️', label: '좋아요' }
+}
+
 const ReviewItem = ({ review }: ReviewItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [showAllImages, setShowAllImages] = useState(false)
+
+  // 클릭 상태 + 카운트 상태
+  const [clickedReactions, setClickedReactions] = useState<{ [key in ReactionType]?: boolean }>({})
+  const [reactionCounts, setReactionCounts] = useState({ ...review.reactions })
+
+  // 마운트 시 sessionStorage에서 상태 불러오기
+  useEffect(() => {
+    const saved = sessionStorage.getItem(`reactions_${review.id}`)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      setClickedReactions(parsed.clicked || {})
+      setReactionCounts(parsed.counts || { ...review.reactions })
+    }
+  }, [review.id])
+
+  const handleReactionClick = (type: ReactionType) => {
+    if (clickedReactions[type]) return
+    const newClicked = { ...clickedReactions, [type]: true }
+    const newCounts = { ...reactionCounts, [type]: reactionCounts[type] + 1 }
+    setClickedReactions(newClicked)
+    setReactionCounts(newCounts)
+
+    // sessionStorage에 저장
+    sessionStorage.setItem(`reactions_${review.id}`, JSON.stringify({ clicked: newClicked, counts: newCounts }))
+  }
 
   const shouldTruncate = review.content.length > 100
-  const displayContent = shouldTruncate && !isExpanded 
-    ? review.content.substring(0, 100) + '...' 
+  const displayContent = shouldTruncate && !isExpanded
+    ? review.content.substring(0, 100) + '...'
     : review.content
 
   return (
@@ -63,81 +97,9 @@ const ReviewItem = ({ review }: ReviewItemProps) => {
         </div>
       </div>
 
-      {/* 이미지들 */}
-      {review.images && review.images.length > 0 && (
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {(showAllImages ? review.images : review.images.slice(0, 2)).map((image, index) => (
-              <div
-                key={index}
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  backgroundColor: '#f0f0f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  color: '#ccc'
-                }}
-              >
-                {image ? (
-                  <img
-                    src={image}
-                    alt={`리뷰 이미지 ${index + 1}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  '📷'
-                )}
-              </div>
-            ))}
-            {review.images.length > 2 && !showAllImages && (
-              <button
-                onClick={() => setShowAllImages(true)}
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '8px',
-                  backgroundColor: '#f0f0f0',
-                  border: '1px dashed #ccc',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  color: '#666'
-                }}
-              >
-                +{review.images.length - 2}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 장소명 */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        marginBottom: '8px',
-        fontSize: '12px',
-        color: '#666'
-      }}>
-        <span style={{ marginRight: '4px' }}>📍</span>
-        {review.placeName}
-      </div>
-
       {/* 리뷰 내용 */}
       <div style={{ marginBottom: '12px' }}>
-        <div style={{ 
-          fontSize: '14px', 
-          lineHeight: 1.5, 
-          color: '#333',
-          whiteSpace: 'pre-wrap'
-        }}>
+        <div style={{ fontSize: '14px', lineHeight: 1.5, color: '#333', whiteSpace: 'pre-wrap' }}>
           {displayContent}
         </div>
         {shouldTruncate && (
@@ -159,72 +121,31 @@ const ReviewItem = ({ review }: ReviewItemProps) => {
       </div>
 
       {/* 반응 버튼들 */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '12px', 
-        flexWrap: 'wrap',
-        fontSize: '12px'
-      }}>
-        <button style={{
-          border: 'none',
-          background: 'transparent',
-          color: '#666',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span>🍯</span>
-          꿀팁감사 {review.reactions.tip.toLocaleString()}
-        </button>
-        <button style={{
-          border: 'none',
-          background: 'transparent',
-          color: '#666',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span>😤</span>
-          부글부글 {review.reactions.angry.toLocaleString()}
-        </button>
-        <button style={{
-          border: 'none',
-          background: 'transparent',
-          color: '#666',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span>🤤</span>
-          쩝쩝박사 {review.reactions.foodie.toLocaleString()}
-        </button>
-        <button style={{
-          border: 'none',
-          background: 'transparent',
-          color: '#666',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span>👍</span>
-          인정 {review.reactions.agree.toLocaleString()}
-        </button>
-        <button style={{
-          border: 'none',
-          background: 'transparent',
-          color: '#666',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          <span>❤️</span>
-          좋아요 {review.reactions.like.toLocaleString()}
-        </button>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {(Object.keys(reactionInfo) as ReactionType[]).map((type) => {
+          const clicked = clickedReactions[type]
+          return (
+            <button
+              key={type}
+              onClick={() => handleReactionClick(type)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                border: clicked ? '1px solid #FF6B35' : '1px solid #ccc',
+                borderRadius: '12px',
+                padding: '4px 8px',
+                backgroundColor: clicked ? '#FFF3EE' : '#f0f0f0',
+                cursor: clicked ? 'default' : 'pointer',
+                fontSize: '12px',
+                color: clicked ? '#FF6B35' : '#666'
+              }}
+            >
+              <span>{reactionInfo[type].emoji}</span>
+              <span>{reactionInfo[type].label} {reactionCounts[type]}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
