@@ -205,7 +205,7 @@ const CommunityPage = () => {
   }
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '600px', height: '100vh', margin: '0 auto', backgroundColor: '#f9f7f5'}}>
       {/* 위치 선택 + Write 버튼 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', fontSize: '16px', color: '#333' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

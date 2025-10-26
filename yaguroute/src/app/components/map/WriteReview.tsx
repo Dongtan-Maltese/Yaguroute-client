@@ -46,7 +46,7 @@ const WriteReview = ({ placeName, onBack, onSubmit }: WriteReviewProps) => {
       left: 0, 
       right: 0, 
       bottom: 0, 
-      backgroundColor: 'white', 
+      backgroundColor: '#f9f7f5', 
       zIndex: 2000,
       overflowY: 'auto'
     }}>
@@ -58,7 +58,7 @@ const WriteReview = ({ placeName, onBack, onSubmit }: WriteReviewProps) => {
         borderBottom: '1px solid #eee',
         position: 'sticky',
         top: 0,
-        backgroundColor: 'white',
+        backgroundColor: '#f9f7f5',
         zIndex: 1
       }}>
         <button
