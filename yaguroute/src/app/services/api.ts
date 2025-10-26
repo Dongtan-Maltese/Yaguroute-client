@@ -89,3 +89,32 @@ export async function createRoute(data: RouteRequest): Promise<RouteResponse> {
 
   return response.json()
 }
+
+export interface RouteStep {
+  type: 'PLACE' | 'TRANSPORT'
+  order: number
+  place?: {
+    name: string
+    photo: string
+    category: string
+    address: string
+    latitude: number
+    longitude: number
+  }
+  transport?: {
+    distance: number
+    duration: number
+    transportMode: string
+  }
+  stayDuration?: number
+}
+
+export interface YaguRoute {
+  routeId: string
+  routeName: string
+  routeSteps: RouteStep[]
+  totalDuration: number
+  totalDistance: number
+  createdAt: string
+  status: string
+}

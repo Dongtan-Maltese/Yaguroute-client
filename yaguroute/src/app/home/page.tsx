@@ -9,6 +9,7 @@ import CategoryTabs from '@/app/components/map/CategoryTabs'
 import emptyImage from "@/images/map/empty.png"
 import { dummyRoutes } from '@/data/routes'
 import { Place } from '@/app/types/map'
+import { YaguRoute } from '../services/api'
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'fan' | 'player'>('fan')
@@ -22,6 +23,30 @@ export default function HomePage() {
     fan: null,
     player: null,
   })
+
+  const [routes, setRoutes] = useState<YaguRoute[]>([])
+  const [loadingRoutes, setLoadingRoutes] = useState(false)
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      setLoadingRoutes(true)
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/yagu-routes`, {
+          headers: { accept: 'application/json' },
+        })
+        if (!res.ok) throw new Error(`API 호출 실패: ${res.status}`)
+        const data: YaguRoute[] = await res.json()
+        setRoutes(data)
+      } catch (err) {
+        console.error('야구루트 API 에러:', err)
+        setRoutes([])
+      } finally {
+        setLoadingRoutes(false)
+      }
+    }
+
+    fetchRoutes()
+  }, [])
 
   // // 위치 정보 가져오기
   // useEffect(() => {
@@ -277,32 +302,54 @@ export default function HomePage() {
               alignItems: 'center',
               justifyContent: 'space-between',
               marginBottom: '12px',
+              position: 'relative', // 부모에 relative
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ fontSize: '19px', fontWeight: 'bold' }}>내 야구루트</div>
               <ChevronRight size={20} color="#888" />
             </div>
-            <img src={iconPlayers.src} alt="players" style={{ position: 'absolute', right: 24, width: '92px' }} />
+
+            <img
+              src={iconPlayers.src}
+              alt="players"
+              style={{
+                position: 'absolute', 
+                right: 24,
+                width: '92px',
+                top: 0, 
+              }}
+            />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {dummyRoutes.map((route) => (
-              <div
-                key={route.id}
-                style={{
-                  backgroundColor: '#fff',
-                  borderRadius: '12px',
-                  padding: '12px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                  textAlign: 'left',
-                }}
-              >
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>{route.date}</div>
-                <div style={{ fontWeight: 'bold' }}>{route.title}</div>
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>{route.path}</div>
+            {loadingRoutes ? (
+              <div style={{ color: '#666' }}>로딩 중...</div>
+            ) : routes.length === 0 ? (
+              <div style={{ color: '#666' }}>등록된 야구루트가 없습니다.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {routes.map((route) => (
+                  <div
+                    key={route.routeId}
+                    style={{
+                      backgroundColor: '#fff',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold' }}>{route.routeName}</div>
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                      {route.routeSteps
+                        .filter((step) => step.place)
+                        .map((step) => step.place!.name)
+                        .join(' → ')}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
