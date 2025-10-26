@@ -75,9 +75,9 @@ export default function SearchBottomSheet({
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
 
   // 높이 상태 정의
-  const CLOSED_HEIGHT = 175 // 닫힌 상태 높이 (필터/구단 선택까지 포함)
-  const getExpandedHeight = () => (typeof window !== 'undefined' ? window.innerHeight * 0.4 : 300)
-  const getFullscreenHeight = () => (typeof window !== 'undefined' ? window.innerHeight : 600)
+  const CLOSED_HEIGHT = 240 // 닫힌 상태 높이 (필터/구단 선택까지 포함)
+  const getExpandedHeight = () => (typeof window !== 'undefined' ? window.innerHeight * 0.5 : 300)
+  const getFullscreenHeight = () => (typeof window !== 'undefined' ? window.innerHeight - 10 : 600) // 하단 여백 10px
 
   // 초기 높이 설정
   useEffect(() => {
@@ -276,6 +276,7 @@ export default function SearchBottomSheet({
         style={{
           position: 'absolute',
           bottom: 0,
+          top: bottomSheetHeight >= getFullscreenHeight() ? '0' : 'auto',
           left: 0,
           right: 0,
           zIndex: 1000,
@@ -283,20 +284,20 @@ export default function SearchBottomSheet({
           borderTopLeftRadius: bottomSheetHeight >= getFullscreenHeight() ? '0px' : '20px',
           borderTopRightRadius: bottomSheetHeight >= getFullscreenHeight() ? '0px' : '20px',
           boxShadow: bottomSheetHeight >= getFullscreenHeight() ? 'none' : '0 -4px 20px rgba(0,0,0,0.15)',
-          height: `${bottomSheetHeight}px`,
+          height: bottomSheetHeight >= getFullscreenHeight() ? '100%' : `${bottomSheetHeight}px`,
           overflowY: 'auto',
-          transition: isDragging ? 'none' : 'height 0.3s ease-in-out, border-radius 0.3s ease-in-out',
+          transition: isDragging ? 'none' : 'height 0.3s ease-in-out, border-radius 0.3s ease-in-out, top 0.3s ease-in-out',
         }}
       >
         {/* 핸들 또는 전체화면 헤더 */}
         {bottomSheetHeight < getFullscreenHeight() ? (
           <div
             style={{
-              width: '40px',
-              height: '4px',
-              backgroundColor: '#ddd',
-              borderRadius: '2px',
-              margin: '12px auto',
+              width: '100%',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               cursor: 'grab',
               userSelect: 'none',
               touchAction: 'none',
@@ -307,7 +308,16 @@ export default function SearchBottomSheet({
               e.preventDefault()
               handleToggleExpanded()
             }}
-          />
+          >
+            <div
+              style={{
+                width: '60px',
+                height: '5px',
+                backgroundColor: '#ddd',
+                borderRadius: '3px',
+              }}
+            />
+          </div>
         ) : (
           <div
             style={{
