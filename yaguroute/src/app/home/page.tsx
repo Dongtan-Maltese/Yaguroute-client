@@ -184,7 +184,7 @@ export default function HomePage() {
       </header>
 
       {/* 검색창 */}
-      <div style={{ padding: '16px' }}>
+      {/* <div style={{ padding: '16px' }}>
         <div
           style={{
             display: 'flex',
@@ -207,7 +207,7 @@ export default function HomePage() {
             }}
           />
         </div>
-      </div>
+      </div> */}
 
       {/* 추천 섹션 */}
       <section style={{ padding: '0 16px', flex: 1, overflowY: 'auto' }}>
