@@ -101,23 +101,23 @@ export default function SearchBottomSheet({
     setDragStartHeight(bottomSheetHeight)
   }
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = React.useCallback((e: MouseEvent) => {
     if (!isDragging) return
     
     const deltaY = dragStartY - e.clientY
     const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
     setBottomSheetHeight(newHeight)
-  }
+  }, [isDragging, dragStartY, dragStartHeight])
 
-  const handleTouchMove = (e: TouchEvent) => {
+  const handleTouchMove = React.useCallback((e: TouchEvent) => {
     if (!isDragging) return
     
     const deltaY = dragStartY - e.touches[0].clientY
     const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
     setBottomSheetHeight(newHeight)
-  }
+  }, [isDragging, dragStartY, dragStartHeight])
 
-  const handleMouseUp = () => {
+  const handleMouseUp = React.useCallback(() => {
     if (!isDragging) return
     
     setIsDragging(false)
@@ -133,9 +133,9 @@ export default function SearchBottomSheet({
       setBottomSheetHeight(getExpandedHeight())
       setIsExpanded(true)
     }
-  }
+  }, [isDragging, bottomSheetHeight])
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = React.useCallback(() => {
     if (!isDragging) return
     
     setIsDragging(false)
@@ -151,24 +151,29 @@ export default function SearchBottomSheet({
       setBottomSheetHeight(getExpandedHeight())
       setIsExpanded(true)
     }
-  }
+  }, [isDragging, bottomSheetHeight])
 
   // 전역 이벤트 리스너 등록
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-      document.addEventListener('touchmove', handleTouchMove, { passive: false })
-      document.addEventListener('touchend', handleTouchEnd)
-    }
+    if (!isDragging) return
+
+    const handleMouseMoveWrapper = (e: MouseEvent) => handleMouseMove(e)
+    const handleMouseUpWrapper = () => handleMouseUp()
+    const handleTouchMoveWrapper = (e: TouchEvent) => handleTouchMove(e)
+    const handleTouchEndWrapper = () => handleTouchEnd()
+
+    document.addEventListener('mousemove', handleMouseMoveWrapper)
+    document.addEventListener('mouseup', handleMouseUpWrapper)
+    document.addEventListener('touchmove', handleTouchMoveWrapper, { passive: false })
+    document.addEventListener('touchend', handleTouchEndWrapper)
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      document.removeEventListener('touchmove', handleTouchMove)
-      document.removeEventListener('touchend', handleTouchEnd)
+      document.removeEventListener('mousemove', handleMouseMoveWrapper)
+      document.removeEventListener('mouseup', handleMouseUpWrapper)
+      document.removeEventListener('touchmove', handleTouchMoveWrapper)
+      document.removeEventListener('touchend', handleTouchEndWrapper)
     }
-  }, [isDragging, dragStartY, dragStartHeight, bottomSheetHeight])
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd])
 
   // 팬 추천 API 로드
   const loadFanCategoryResults = async (category: string) => {
