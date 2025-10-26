@@ -43,7 +43,9 @@ export default function MapPage() {
           padding: '8px 16px',
           borderRadius: '25px',
           boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-          minWidth: '300px',
+          width: '90%',             
+          maxWidth: '600px',       
+          minWidth: '280px',        
         }}
       >
         {/* 홈 버튼 */}
