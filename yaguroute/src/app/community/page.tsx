@@ -25,102 +25,144 @@ interface Review {
   }
   tab: Tab
   category?: string
+  location: '한화생명 볼파크' | '잠실 야구장'
 }
 
 const CommunityPage = () => {
   const [activeTab, setActiveTab] = useState<Tab>('전체')
   const [activeFilter, setActiveFilter] = useState<string>('전체')
   const [isWriting, setIsWriting] = useState(false) // 작성 모드 상태
-
-  const locationName = '한화생명 이글스 파크'
-
+  const [selectedLocation, setSelectedLocation] = useState<'한화생명 볼파크' | '잠실 야구장'>('한화생명 볼파크')
   const reviews: Review[] = [
-    // 장소리뷰
+    // 한화생명 볼파크
     {
       id: '1',
-      nickname: '야구매니아',
-      board: '맛집리뷰',
-      timeAgo: '1시간 전',
-      content: '한화생명 이글스 파크 근처 새로 생긴 치킨집 다녀왔는데, 바삭하고 양념도 딱 좋네요. 경기 전에 들리면 딱입니다!',
-      images: ['https://via.placeholder.com/80x80', 'https://via.placeholder.com/80x80'],
-      placeName: '잠실 치킨 맛집',
-      reactions: { tip: 18, angry: 0, foodie: 7, agree: 5, like: 12 },
-      tab: '장소리뷰',
-      category: '맛집'
-    },
-    {
-      id: '2',
-      nickname: '카페러버',
-      board: '장소리뷰',
-      timeAgo: '2시간 전',
-      content: '경기장 근처 카페 분위기 좋고 디저트도 맛있습니다. 창가 자리가 인기 많아요!',
-      images: ['https://via.placeholder.com/80x80'],
-      placeName: '잠실 카페 라떼',
-      reactions: { tip: 5, angry: 0, foodie: 3, agree: 2, like: 4 },
-      tab: '장소리뷰',
-      category: '카페'
-    },
-    // 지금경기장
-    {
-      id: '3',
-      nickname: '응원짱',
-      board: '지금경기장',
-      timeAgo: '10분 전',
-      content: '오늘 경기장 분위기 미쳤네요! 응원가 따라 부르다 목이 아플 정도예요. 치맥 필수!',
-      images: [],
-      placeName: '한화생명 이글스 파크',
-      reactions: { tip: 3, angry: 0, foodie: 2, agree: 4, like: 8 },
-      tab: '지금경기장'
-    },
-    // 자유게시판
-    {
-      id: '4',
-      nickname: '야구러버',
-      board: '자유게시판',
-      timeAgo: '30분 전',
-      content: '오늘 경기 진짜 재밌었네요! 9회말 반전까지 완벽했어요. 다음 경기 예약 완료!',
-      images: [],
-      placeName: '잠실구장 근처',
-      reactions: { tip: 4, angry: 0, foodie: 1, agree: 3, like: 10 },
-      tab: '자유게시판'
-    },
-    // 인기 게시글
-    {
-      id: '5',
-      nickname: '응원왕',
+      nickname: '한화가을야구가자',
       board: '장소리뷰',
       timeAgo: '3시간 전',
       content: '오늘 경기장 앞 길거리 음식들이 진짜 맛있어요. 특히 떡볶이랑 치킨 조합 최고!',
-      images: ['https://via.placeholder.com/80x80', 'https://via.placeholder.com/80x80', 'https://via.placeholder.com/80x80'],
+      images: [],
       placeName: '한화푸드존',
       reactions: { tip: 25, angry: 1, foodie: 15, agree: 20, like: 30 },
       tab: '🔥 인기',
-      category: '맛집'
+      category: '맛집',
+      location: '한화생명 볼파크'
     },
     {
-      id: '6',
+      id: '2',
       nickname: '치맥러버',
       board: '지금경기장',
       timeAgo: '1시간 전',
       content: '경기장 좌석 배치도 좋고, 매점 음식도 빠르게 나와서 편하게 즐겼습니다!',
       images: [],
-      placeName: '한화생명 이글스 파크',
+      placeName: '한화생명 볼파크',
       reactions: { tip: 20, angry: 0, foodie: 8, agree: 15, like: 22 },
-      tab: '🔥 인기'
+      tab: '지금경기장',
+      location: '한화생명 볼파크'
     },
     {
-      id: '7',
+      id: '3',
       nickname: '야구소녀',
       board: '자유게시판',
       timeAgo: '2시간 전',
       content: '오늘 경기 중간에 치어리더 공연 너무 예뻤어요! 사진 많이 찍었네요 😄',
-      images: ['https://via.placeholder.com/80x80'],
-      placeName: '잠실 경기장',
+      images: [],
+      placeName: '한화생명 볼파크 주변',
       reactions: { tip: 18, angry: 0, foodie: 3, agree: 10, like: 25 },
-      tab: '🔥 인기'
+      tab: '자유게시판',
+      location: '한화생명 볼파크'
+    },
+    {
+      id: '4',
+      nickname: '야구매니아',
+      board: '장소리뷰',
+      timeAgo: '50분 전',
+      content: '주차 공간 넉넉하고, 경기장 주변 풍경이 좋아요!',
+      images: [],
+      placeName: '한화생명 볼파크 주변',
+      reactions: { tip: 8, angry: 0, foodie: 1, agree: 5, like: 12 },
+      tab: '장소리뷰',
+      category: '기타',
+      location: '한화생명 볼파크'
+    },
+    {
+      id: '5',
+      nickname: '치어리더팬',
+      board: '🔥 인기',
+      timeAgo: '2시간 전',
+      content: '오늘 응원석 완전 신났어요! 치맥과 함께 즐기기 딱!',
+      images: [],
+      placeName: '한화생명 볼파크',
+      reactions: { tip: 15, angry: 0, foodie: 5, agree: 10, like: 18 },
+      tab: '🔥 인기',
+      location: '한화생명 볼파크'
+    },
+  
+    // 잠실 야구장
+    {
+      id: '6',
+      nickname: '잠실구장죽돌이',
+      board: '장소리뷰',
+      timeAgo: '45분 전',
+      content: '잠실구장 근처 떡볶이 맛집 방문! 경기 전 간단히 먹기 딱 좋아요.',
+      images: [],
+      placeName: '잠실 떡볶이집',
+      reactions: { tip: 10, angry: 0, foodie: 5, agree: 3, like: 8 },
+      tab: '장소리뷰',
+      category: '맛집',
+      location: '잠실 야구장'
+    },
+    {
+      id: '7',
+      nickname: '무적LG영원해',
+      board: '지금경기장',
+      timeAgo: '5분 전',
+      content: 'LG vs 한화 경기장 분위기 최고네요! 응원 열기 장난 아니에요!',
+      images: [],
+      placeName: '잠실 야구장',
+      reactions: { tip: 4, angry: 0, foodie: 1, agree: 2, like: 5 },
+      tab: '지금경기장',
+      location: '잠실 야구장'
+    },
+    {
+      id: '8',
+      nickname: 'LGLGLGLGL',
+      board: '자유게시판',
+      timeAgo: '1시간 전',
+      content: '오늘 경기 완전 대박! 8회말 역전 드라마네요.',
+      images: [],
+      placeName: '잠실 야구장 주변',
+      reactions: { tip: 6, angry: 0, foodie: 2, agree: 4, like: 12 },
+      tab: '자유게시판',
+      location: '잠실 야구장'
+    },
+    {
+      id: '9',
+      nickname: '응원짱',
+      board: '장소리뷰',
+      timeAgo: '30분 전',
+      content: '경기장 주변 카페 분위기 좋아요! 경기 전 커피 한잔 추천합니다.',
+      images: [],
+      placeName: '잠실 카페 라떼',
+      reactions: { tip: 3, angry: 0, foodie: 2, agree: 2, like: 5 },
+      tab: '장소리뷰',
+      category: '카페',
+      location: '잠실 야구장'
+    },
+    {
+      id: '10',
+      nickname: 'LG열혈팬',
+      board: '🔥 인기',
+      timeAgo: '1시간 전',
+      content: '오늘 경기 응원 열기 대박! 치어리더 공연 최고!',
+      images: [],
+      placeName: '잠실 야구장',
+      reactions: { tip: 12, angry: 0, foodie: 3, agree: 8, like: 20 },
+      tab: '🔥 인기',
+      location: '잠실 야구장'
     }
   ]
-
+  
 
   const filterOptions: { [key in Tab]?: string[] } = {
     '🔥 인기': ['전체', '장소리뷰', '지금경기장', '자유게시판'],
@@ -128,37 +170,34 @@ const CommunityPage = () => {
   }
 
   const filteredReviews = reviews.filter((r) => {
+    if (r.location !== selectedLocation && r.tab !== '🔥 인기') return false // 인기 탭은 전체 인기글 유지
+
     if (activeTab === '전체') return true
-  
+
     if (activeTab === '장소리뷰') {
       if (r.tab !== '장소리뷰') return false
       if (activeFilter !== '전체') return r.category === activeFilter
       return true
     }
-  
+
     if (activeTab === '🔥 인기') {
-      // 인기 게시글만
       if (r.tab !== '🔥 인기') return false
-      // 필터 적용
       if (activeFilter === '전체') return true
       return r.category === activeFilter || r.board === activeFilter
     }
-  
-    // 지금경기장, 자유게시판
-    return r.tab === activeTab
-  })  
 
-  // 작성 완료 시 리뷰를 처리하는 예시
+    return r.tab === activeTab
+  })
+
   const handleSubmitReview = (reviewData: any) => {
     console.log('작성 완료:', reviewData)
     setIsWriting(false)
   }
 
   if (isWriting) {
-    // 작성 모드
     return (
       <WriteReview
-        placeName={locationName} 
+        placeName={selectedLocation}
         onBack={() => setIsWriting(false)}
         onSubmit={handleSubmitReview}
       />
@@ -167,18 +206,18 @@ const CommunityPage = () => {
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      {/* 위치 + Write 버튼 */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px',
-        fontSize: '16px',
-        color: '#333'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span style={{ marginRight: '4px' }}>📍</span>
-          <span style={{ fontWeight: 'bold' }}>{locationName}</span>
+      {/* 위치 선택 + Write 버튼 */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', fontSize: '16px', color: '#333' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>📍</span>
+          <select
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value as '한화생명 볼파크' | '잠실 야구장')}
+            style={{ fontSize: '16px', fontWeight: 'bold', padding: '4px 8px' }}
+          >
+            <option value="한화생명 볼파크">한화생명 볼파크</option>
+            <option value="잠실 야구장">잠실 야구장</option>
+          </select>
         </div>
         <button onClick={() => setIsWriting(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>
           <img src={writeButton.src} alt="Write" style={{ width: '32px', height: '32px' }} />
