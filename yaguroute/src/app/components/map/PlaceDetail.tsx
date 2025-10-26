@@ -14,46 +14,46 @@ const PlaceDetail = ({ place, onBack, onWriteReview }: PlaceDetailProps) => {
   
   // 임시 리뷰 데이터 (실제로는 API에서 가져올 데이터)
   // 리뷰가 있는 경우를 보려면 아래 배열의 주석을 해제하세요
-  // const [reviews] = useState<any[]>([]);
+  const [reviews] = useState<any[]>([]);
   
   // 리뷰가 있는 경우 샘플 데이터 (테스트용)
-  const [reviews] = useState([
-    {
-      id: '1',
-      nickname: '닉네임',
-      board: '자유게시판',
-      timeAgo: '3분 전',
-      content: '세 줄을 초과하는 긴 텍스트는 더보기를 클릭해 전체 내용을 확인해요. 세 줄을 초과하는 긴 텍스트는 더보기를 클릭해 전체 내용을 확인해요 세 줄을 초과하는 긴 텍스트는 더보기를 클릭해 전체 내용을 확인해요. 정말 맛있었어요!',
-      images: [
-        'https://via.placeholder.com/80x80/FF6B35/FFFFFF?text=야구',
-        'https://via.placeholder.com/80x80/4CAF50/FFFFFF?text=게임'
-      ],
-      placeName: place.name,
-      reactions: {
-        tip: 1234545,
-        angry: 12323,
-        foodie: 212,
-        agree: 1,
-        like: 43
-      }
-    },
-    {
-      id: '2',
-      nickname: '야구팬123',
-      board: '맛집리뷰',
-      timeAgo: '1시간 전',
-      content: '경기장 근처에서 가장 맛있는 쪽갈비집이에요!',
-      images: [],
-      placeName: place.name,
-      reactions: {
-        tip: 15,
-        angry: 0,
-        foodie: 8,
-        agree: 3,
-        like: 12
-      }
-    }
-  ]);
+  // const [reviews] = useState([
+  //   {
+  //     id: '1',
+  //     nickname: '닉네임',
+  //     board: '자유게시판',
+  //     timeAgo: '3분 전',
+  //     content: '세 줄을 초과하는 긴 텍스트는 더보기를 클릭해 전체 내용을 확인해요. 세 줄을 초과하는 긴 텍스트는 더보기를 클릭해 전체 내용을 확인해요 세 줄을 초과하는 긴 텍스트는 더보기를 클릭해 전체 내용을 확인해요. 정말 맛있었어요!',
+  //     images: [
+  //       'https://via.placeholder.com/80x80/FF6B35/FFFFFF?text=야구',
+  //       'https://via.placeholder.com/80x80/4CAF50/FFFFFF?text=게임'
+  //     ],
+  //     placeName: place.name,
+  //     reactions: {
+  //       tip: 1234545,
+  //       angry: 12323,
+  //       foodie: 212,
+  //       agree: 1,
+  //       like: 43
+  //     }
+  //   },
+  //   {
+  //     id: '2',
+  //     nickname: '야구팬123',
+  //     board: '맛집리뷰',
+  //     timeAgo: '1시간 전',
+  //     content: '경기장 근처에서 가장 맛있는 쪽갈비집이에요!',
+  //     images: [],
+  //     placeName: place.name,
+  //     reactions: {
+  //       tip: 15,
+  //       angry: 0,
+  //       foodie: 8,
+  //       agree: 3,
+  //       like: 12
+  //     }
+  //   }
+  // ]);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -198,9 +198,12 @@ const PlaceDetail = ({ place, onBack, onWriteReview }: PlaceDetailProps) => {
       )}
 
       {activeTab === 'enjoy' && (
-        <div>
-          <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-            즐길거리 정보가 여기에 표시됩니다.
+        <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>
+            곧 오픈 예정! 🎉
+          </div>
+          <div style={{ fontSize: '14px', marginBottom: '20px' }}>
+            즐길거리 정보는 현재 준비 중이에요. 조금만 기다려 주세요 🏟️
           </div>
         </div>
       )}
