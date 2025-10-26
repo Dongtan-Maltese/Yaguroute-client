@@ -14,7 +14,8 @@ export default function HomePage() {
     <div
       style={{
         backgroundColor: '#f9f7f5',
-        minHeight: '100vh',
+        height: '100vh',
+        overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
       }}

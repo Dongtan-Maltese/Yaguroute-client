@@ -27,7 +27,7 @@ export default function MapPage() {
   }
 
   return (
-    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
       {/* 상단 검색창 */}
       <div
         style={{
