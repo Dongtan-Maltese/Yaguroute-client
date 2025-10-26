@@ -104,10 +104,10 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
       return () => mapScript.removeEventListener('load', onLoadKakaoMap)
     }, [center.lat, center.lng, level])
 
-    // 맵 로드 후 초기 검색 실행
+    // 맵 로드 후 초기 검색 실행 (주변 맛집)
     useEffect(() => {
-      if (map && currentKeyword === '전체') {
-        searchPlaces('전체')
+      if (map) {
+        searchPlaces('')
       }
     }, [map])
 
@@ -130,7 +130,6 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
     
     const searchPlaces = async (keyword: string, teamCode?: string) => {
       if (!map) return
-      if (!keyword.trim()) return
     
       removeMarkers()
       setIsLoading(true)
@@ -143,14 +142,27 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
         setCurrentKeyword(keyword)
         setCurrentLocation({ lat: currentLat, lng: currentLng })
     
-        const params = new URLSearchParams({
-          keyword: keyword,
-          latitude: currentLat.toString(),
-          longitude: currentLng.toString(),
-        })
-        if (teamCode) params.append('team', teamCode)
+        let apiUrl: string
+        
+        if (!keyword.trim() || keyword === '전체') {
+          // 검색어가 없거나 '전체'인 경우 주변 검색
+          const params = new URLSearchParams({
+            latitude: currentLat.toString(),
+            longitude: currentLng.toString(),
+            keyword: '맛집', // 주변 맛집 검색
+          })
+          apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search/nearby?${params.toString()}`
+        } else {
+          // 검색어가 있는 경우 일반 검색
+          const params = new URLSearchParams({
+            keyword: keyword,
+            latitude: currentLat.toString(),
+            longitude: currentLng.toString(),
+          })
+          if (teamCode) params.append('team', teamCode)
+          apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search?${params.toString()}`
+        }
     
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search?${params.toString()}`
         const response = await fetch(apiUrl)
         if (!response.ok) throw new Error(`백엔드 API 요청 실패: ${response.status}`)
         const data: SearchResponse = await response.json()

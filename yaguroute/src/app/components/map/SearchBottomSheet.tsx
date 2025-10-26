@@ -177,9 +177,12 @@ export default function SearchBottomSheet({
   // 팬 추천 API 로드
   const loadFanCategoryResults = async (category: string) => {
     if (category === '전체') {
+      // 전체인 경우 상단 검색창에서 검색한 결과를 그대로 사용
       setFilteredFanResults(searchResults)
       return
     }
+    
+    // 특정 카테고리인 경우 API 호출
     setIsLoadingFan(true)
     try {
       const params = new URLSearchParams({ keyword: category })
@@ -198,7 +201,7 @@ export default function SearchBottomSheet({
 
   useEffect(() => {
     if (activeTab === 'fan') loadFanCategoryResults(fanCategory)
-  }, [fanCategory, activeTab])
+  }, [fanCategory, activeTab, searchResults])
 
   const loadBaseballRestaurants = async (teamCode: string) => {
     setIsLoadingBaseball(true)

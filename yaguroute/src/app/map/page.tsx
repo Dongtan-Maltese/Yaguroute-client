@@ -140,7 +140,7 @@ export default function MapPage() {
         ref={kakaoMapRef}
         width="100%"
         height="100vh"
-        center={{ lat: 37.5665, lng: 126.978 }}
+        center={{ lat: 36.316537, lng: 127.431104 }}
         level={3}
         searchKeyword={searchKeyword}
         onSearchKeywordChange={setSearchKeyword}
