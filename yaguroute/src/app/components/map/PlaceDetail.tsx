@@ -85,7 +85,7 @@ const PlaceDetail = ({ place, onBack, onWriteReview }: PlaceDetailProps) => {
                 borderRadius: '4px',
               }}
             >
-              카테고리
+              {place.category}
             </div>
           </div>
           {place.description && (

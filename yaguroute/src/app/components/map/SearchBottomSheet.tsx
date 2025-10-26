@@ -12,7 +12,7 @@ import samsung from "@/images/team-logo/img_samsung.png"
 import lotte from "@/images/team-logo/img_lotte.png"
 import nc from "@/images/team-logo/img_nc.png"
 import kia from "@/images/team-logo/img_kia.png"
-import dusan from "@/images/team-logo/img_dusan.png"
+import doosan from "@/images/team-logo/img_dusan.png"
 import TeamSelector from '@/app/components/map/TeamSelector'
 import PlaceList from '@/app/components/map/PlaceList'
 import FloatingButton from '@/app/components/common/FloatingButton'
@@ -48,7 +48,7 @@ const baseballTeams: BaseballTeam[] = [
   { name: '롯데 자이언츠', code: 'lotte', logo: lotte.src, color: '#00357E' },
   { name: 'NC 다이노스', code: 'nc', logo: nc.src, color: '#315288' },
   { name: 'KIA 타이거즈', code: 'kia', logo: kia.src, color: '#EA0029' },
-  { name: '두산 베어스', code: 'dusan', logo: dusan.src, color: '#383284' },
+  { name: '두산 베어스', code: 'doosan', logo: doosan.src, color: '#383284' },
 ]
 
 export default function SearchBottomSheet({
@@ -206,16 +206,6 @@ export default function SearchBottomSheet({
 
   // 팬 추천 API 로드 (3개 카테고리 모두 호출)
   const loadAllFanCategories = async () => {
-    // 이미 로드되었고 위치가 크게 변하지 않았으면 스킵
-    if (
-      fanDataLoaded && 
-      lastLocationRef.current &&
-      Math.abs(lastLocationRef.current.lat - currentLocation.lat) < 0.01 &&
-      Math.abs(lastLocationRef.current.lng - currentLocation.lng) < 0.01
-    ) {
-      return
-    }
-
     setIsLoadingFan(true)
     try {
       const categories = ['MEAL', 'CAFE', 'TOUR']
@@ -263,12 +253,17 @@ export default function SearchBottomSheet({
     }
   }
 
+  // 첫 진입 시 팬 추천 데이터 로드
+  useEffect(() => {
+    loadAllFanCategories()
+  }, [currentLocation])
+
   // 팬 추천 탭 활성화 시 데이터 로드
   useEffect(() => {
-    if (activeTab === 'fan') {
+    if (activeTab === 'fan' && !fanDataLoaded) {
       loadAllFanCategories()
     }
-  }, [activeTab, currentLocation])
+  }, [activeTab])
 
   // 중복 제거 함수
   const removeDuplicates = (places: Place[]) => {

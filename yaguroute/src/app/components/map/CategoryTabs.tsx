@@ -1,21 +1,24 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import iconPlayer from '@/images/map/icon-player.png'
 import iconPlayerActive from '@/images/map/icon-player-active.png'
 
-const CategoryTabs = () => {
-  const [activeTab, setActiveTab] = useState<'fan' | 'player'>('fan')
+interface CategoryTabsProps {
+  activeTab: 'fan' | 'player'
+  onTabChange: (tab: 'fan' | 'player') => void
+}
 
+const CategoryTabs = ({ activeTab, onTabChange }: CategoryTabsProps) => {
   const tabs = [
     {
-      key: 'fan',
+      key: 'fan' as const,
       label: '팬추천 BEST',
       icon: iconPlayer,
       activeIcon: iconPlayerActive,
     },
     {
-      key: 'player',
+      key: 'player' as const,
       label: '야구선수 맛집',
       icon: iconPlayer,
       activeIcon: iconPlayerActive,
@@ -35,7 +38,7 @@ const CategoryTabs = () => {
         return (
           <button
             key={key}
-            onClick={() => setActiveTab(key as 'fan' | 'player')}
+            onClick={() => onTabChange(key)}
             style={{
               width: "fit-content",
               display: 'flex',
