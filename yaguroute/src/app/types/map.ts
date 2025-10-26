@@ -5,5 +5,6 @@ export interface Place {
     id: string
     description: string
     imageUrl: string
+    category?: string
 }
   

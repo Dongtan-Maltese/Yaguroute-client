@@ -50,12 +50,23 @@ const PlaceItem = ({
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column'}}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
           <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{place.name}</div>
-          {/* TODO. 카테고리 받아와서 표시해주기 */}
-          <div style={{ fontSize: '12px', color: '#FF6B35', border: '1px solid #FF6B35', padding: '2px 6px', borderRadius: '4px' }}>
-            카테고리
-          </div>
+          {/* 카테고리 표시 */}
+          {place.category && (
+            <div 
+              style={{ 
+                fontSize: '12px', 
+                color: '#FF6B35', 
+                border: '1px solid #FF6B35', 
+                padding: '2px 6px', 
+                borderRadius: '4px',
+                flexShrink: 0,
+              }}
+            >
+              {place.category}
+            </div>
+          )}
         </div>
 
         {place.description && (
@@ -69,43 +80,12 @@ const PlaceItem = ({
 }
 
 export default function PlaceList({ places, onPlaceSelect }: PlaceListProps) {
-  // TODO. 더미 데이터 제거
-  const data: Place[] =
-    places && places.length > 0
-      ? places
-      : [
-          {
-            id: '1',
-            name: '맛있는 치킨집',
-            latitude: '37.501',
-            longitude: '127.039',
-            description: '바삭하고 촉촉한 치킨이 인기인 곳',
-            imageUrl: 'https://picsum.photos/100/100?random=1',
-          },
-          {
-            id: '2',
-            name: '분위기 좋은 카페',
-            latitude: '37.502',
-            longitude: '127.037',
-            description: '커피와 디저트가 맛있는 힙한 카페',
-            imageUrl: 'https://picsum.photos/100/100?random=2',
-          },
-          {
-            id: '3',
-            name: '핫플레이스 맛집',
-            latitude: '37.564',
-            longitude: '126.903',
-            description: 'SNS에서 유명한 인기 맛집',
-            imageUrl: 'https://picsum.photos/100/100?random=3',
-          },
-        ]
-
   return (
     <div style={{ padding: '0 0 20px 0' }}>
-      {data.length > 0 ? (
-        data.map((place) => (
+      {places.length > 0 ? (
+        places.map((place, index) => (
           <PlaceItem
-            key={place.id}
+            key={`${place.latitude},${place.longitude}-${index}`}
             place={place}
             onClick={() => onPlaceSelect(place)}
           />

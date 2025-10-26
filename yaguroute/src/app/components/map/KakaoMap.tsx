@@ -8,6 +8,7 @@ import {
   useImperativeHandle,
 } from 'react'
 import SearchBottomSheet from '@/app/components/map/SearchBottomSheet'
+import SearchResultBottomSheet from '@/app/components/map/SearchResultBottomSheet'
 import iconMarker from '@/images/map/icon-marker.png'
 import iconMarkerActive from '@/images/map/icon-marker-active.png'
 import { Place } from '@/app/types/map'
@@ -51,17 +52,22 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
     const [markers, setMarkers] = useState<any[]>([])
     const selectedMarkerRef = useRef<any>(null)
     const selectedInfoWindowRef = useRef<any>(null)
-    const [showBottomSheet, setShowBottomSheet] = useState(true) // 항상 표시
+    const [showBottomSheet, setShowBottomSheet] = useState(true)
+    const [showSearchResultSheet, setShowSearchResultSheet] = useState(false)
     const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
     const [isLoading, setIsLoading] = useState(false)
     const [currentKeyword, setCurrentKeyword] = useState('전체')
     const [currentLocation, setCurrentLocation] = useState(center)
+    const [activeSearchKeyword, setActiveSearchKeyword] = useState('')
 
     useImperativeHandle(ref, () => ({
       searchPlaces: (keyword?: string) => {
         const searchTerm = keyword || searchKeyword
         if (searchTerm.trim()) {
-          searchPlaces(searchTerm)
+          // 검색창에서 검색하면 새로운 바텀시트 표시
+          setActiveSearchKeyword(searchTerm)
+          setShowSearchResultSheet(true)
+          searchPlacesForKeyword(searchTerm)
         }
       },
     }))
@@ -127,29 +133,93 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
         selectedInfoWindowRef.current = null
       }
     }
-    
-    const searchPlaces = async (keyword: string, teamCode?: string) => {
+
+    // 검색창용 검색 (SearchResultBottomSheet용)
+    const searchPlacesForKeyword = async (keyword: string) => {
       if (!map) return
-    
+
       removeMarkers()
       setIsLoading(true)
-    
+
+      try {
+        const params = new URLSearchParams({ keyword })
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search/keyword?${params.toString()}`
+
+        const response = await fetch(apiUrl)
+        if (!response.ok) throw new Error(`백엔드 API 요청 실패: ${response.status}`)
+        const data: SearchResponse = await response.json()
+        const results = data.items ?? []
+
+        removeMarkers()
+
+        if (results.length > 0) {
+          setSearchResults(results)
+          const newMarkers: any[] = []
+          const bounds = new window.kakao.maps.LatLngBounds()
+
+          results.forEach((place) => {
+            const marker = new window.kakao.maps.Marker({
+              position: new window.kakao.maps.LatLng(
+                parseFloat(place.latitude),
+                parseFloat(place.longitude)
+              ),
+              title: place.name,
+              image: new window.kakao.maps.MarkerImage(
+                iconMarker.src,
+                new window.kakao.maps.Size(28, 28)
+              ),
+            })
+
+            marker.setMap(map)
+            newMarkers.push(marker)
+
+            window.kakao.maps.event.addListener(marker, 'click', () => {
+              handlePlaceSelect(place)
+            })
+
+            bounds.extend(
+              new window.kakao.maps.LatLng(
+                parseFloat(place.latitude),
+                parseFloat(place.longitude)
+              )
+            )
+          })
+
+          setMarkers(newMarkers)
+          map.setBounds(bounds)
+        } else {
+          setSearchResults([])
+        }
+      } catch (error) {
+        console.error('검색 중 오류 발생:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    // 기존 SearchBottomSheet용 검색
+    const searchPlaces = async (keyword: string, teamCode?: string) => {
+      if (!map) return
+
+      removeMarkers()
+      setIsLoading(true)
+
       try {
         const mapCenter = map.getCenter()
         const currentLat = mapCenter.getLat()
         const currentLng = mapCenter.getLng()
-    
+
         setCurrentKeyword(keyword)
         setCurrentLocation({ lat: currentLat, lng: currentLng })
-    
+
         let apiUrl: string
-        
+
         if (!keyword.trim() || keyword === '전체') {
           // 검색어가 없거나 '전체'인 경우 주변 검색
           const params = new URLSearchParams({
             latitude: currentLat.toString(),
             longitude: currentLng.toString(),
-            keyword: '맛집', // 주변 맛집 검색
+            keyword: '맛집',
           })
           apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search/nearby?${params.toString()}`
         } else {
@@ -162,19 +232,19 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
           if (teamCode) params.append('team', teamCode)
           apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search?${params.toString()}`
         }
-    
+
         const response = await fetch(apiUrl)
         if (!response.ok) throw new Error(`백엔드 API 요청 실패: ${response.status}`)
         const data: SearchResponse = await response.json()
         const results = data.items ?? []
-    
+
         removeMarkers()
-    
+
         if (results.length > 0) {
           setSearchResults(results)
           const newMarkers: any[] = []
           const bounds = new window.kakao.maps.LatLngBounds()
-    
+
           results.forEach((place) => {
             const marker = new window.kakao.maps.Marker({
               position: new window.kakao.maps.LatLng(
@@ -182,28 +252,33 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
                 parseFloat(place.longitude)
               ),
               title: place.name,
-              image: new window.kakao.maps.MarkerImage(iconMarker.src, new window.kakao.maps.Size(28, 28)),
+              image: new window.kakao.maps.MarkerImage(
+                iconMarker.src,
+                new window.kakao.maps.Size(28, 28)
+              ),
             })
-    
+
             marker.setMap(map)
             newMarkers.push(marker)
-    
+
             window.kakao.maps.event.addListener(marker, 'click', () => {
               handlePlaceSelect(place)
             })
-    
-            bounds.extend(new window.kakao.maps.LatLng(
-              parseFloat(place.latitude),
-              parseFloat(place.longitude)
-            ))
+
+            bounds.extend(
+              new window.kakao.maps.LatLng(
+                parseFloat(place.latitude),
+                parseFloat(place.longitude)
+              )
+            )
           })
-    
+
           setMarkers(newMarkers)
           map.setBounds(bounds)
         } else {
           setSearchResults([])
         }
-    
+
         setShowBottomSheet(true)
         setViewMode('map')
       } catch (error) {
@@ -211,17 +286,22 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
       } finally {
         setIsLoading(false)
       }
-    }    
-    
+    }
+
     const handlePlaceSelect = (place: Place) => {
       setViewMode('map')
       setShowBottomSheet(true)
       handleMarkerClick(place)
-    }     
+    }
 
     const handleCloseBottomSheet = () => {
       setShowBottomSheet(false)
       setViewMode('map')
+    }
+
+    const handleCloseSearchResultSheet = () => {
+      setShowSearchResultSheet(false)
+      setActiveSearchKeyword('')
     }
 
     const handleViewModeChange = (mode: 'map' | 'list') => {
@@ -319,16 +399,30 @@ const KakaoMap = forwardRef<any, KakaoMapProps>(
           </div>
         )}
 
-        <SearchBottomSheet
-          searchResults={searchResults}
-          onClose={handleCloseBottomSheet}
-          onPlaceSelect={handlePlaceSelect}
-          viewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
-          currentKeyword={currentKeyword}
-          currentLocation={currentLocation}
-          onTeamSearchRequest={handleTeamSearchRequest}
-        />
+        {/* 기존 SearchBottomSheet (구단 선택 및 팬 추천용) */}
+        {showBottomSheet && !showSearchResultSheet && (
+          <SearchBottomSheet
+            searchResults={searchResults}
+            onClose={handleCloseBottomSheet}
+            onPlaceSelect={handlePlaceSelect}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            currentKeyword={currentKeyword}
+            currentLocation={currentLocation}
+            onTeamSearchRequest={handleTeamSearchRequest}
+          />
+        )}
+
+        {/* 새로운 SearchResultBottomSheet (검색창용) */}
+        {showSearchResultSheet && (
+          <SearchResultBottomSheet
+            searchKeyword={activeSearchKeyword}
+            onClose={handleCloseSearchResultSheet}
+            onPlaceSelect={handlePlaceSelect}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+          />
+        )}
 
         <div
           ref={mapRef}

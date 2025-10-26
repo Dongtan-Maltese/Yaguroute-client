@@ -3,6 +3,16 @@
 import React, { useState, useEffect, useRef } from 'react'
 import iconPlayerActive from '@/images/map/icon-player-active.png'
 import iconPlayer from '@/images/map/icon-player.png'
+import hanhwa from "@/images/team-logo/img_hanhwa.png"
+import lg from "@/images/team-logo/img_lg.png"
+import kiwoom from "@/images/team-logo/img_kiwoom.png"
+import ssg from "@/images/team-logo/img_ssg.png"
+import kt from "@/images/team-logo/img_kt.png"
+import samsung from "@/images/team-logo/img_samsung.png"
+import lotte from "@/images/team-logo/img_lotte.png"
+import nc from "@/images/team-logo/img_nc.png"
+import kia from "@/images/team-logo/img_kia.png"
+import dusan from "@/images/team-logo/img_dusan.png"
 import TeamSelector from '@/app/components/map/TeamSelector'
 import PlaceList from '@/app/components/map/PlaceList'
 import FloatingButton from '@/app/components/common/FloatingButton'
@@ -29,16 +39,16 @@ interface BaseballTeam {
 }
 
 const baseballTeams: BaseballTeam[] = [
-  { name: '한화 이글스', code: 'hanhwa', logo: 'Eagles', color: '#FC4E00' },
-  { name: 'LG 트윈스', code: 'lg', logo: 'Twins', color: '#C30452' },
-  { name: '키움 히어로즈', code: 'kiwoom', logo: 'Heroes', color: '#6E1A29' },
-  { name: 'SSG 랜더스', code: 'ssg', logo: 'Landers', color: '#CE0E2D' },
-  { name: 'KT 위즈', code: 'kt', logo: 'wiz', color: '#3E3E3E' },
-  { name: '삼성 라이온즈', code: 'samsung', logo: 'Lions', color: '#074CA1' },
-  { name: '롯데 자이언츠', code: 'lotte', logo: 'Giants', color: '#00357E' },
-  { name: 'NC 다이노스', code: 'nc', logo: 'Dinos', color: '#315288' },
-  { name: 'KIA 타이거즈', code: 'kia', logo: 'Tigers', color: '#EA0029' },
-  { name: '두산 베어스', code: 'doosan', logo: 'Bears', color: '#383284' },
+  { name: '한화 이글스', code: 'hanhwa', logo: hanhwa.src, color: '#FC4E00' },
+  { name: 'LG 트윈스', code: 'lg', logo: lg.src, color: '#C30452' },
+  { name: '키움 히어로즈', code: 'kiwoom', logo: kiwoom.src, color: '#6E1A29' },
+  { name: 'SSG 랜더스', code: 'ssg', logo: ssg.src, color: '#CE0E2D' },
+  { name: 'KT 위즈', code: 'kt', logo: kt.src, color: '#3E3E3E' },
+  { name: '삼성 라이온즈', code: 'samsung', logo: samsung.src, color: '#074CA1' },
+  { name: '롯데 자이언츠', code: 'lotte', logo: lotte.src, color: '#00357E' },
+  { name: 'NC 다이노스', code: 'nc', logo: nc.src, color: '#315288' },
+  { name: 'KIA 타이거즈', code: 'kia', logo: kia.src, color: '#EA0029' },
+  { name: '두산 베어스', code: 'dusan', logo: dusan.src, color: '#383284' },
 ]
 
 export default function SearchBottomSheet({
@@ -61,13 +71,29 @@ export default function SearchBottomSheet({
   const [fanCategory, setFanCategory] = useState('전체')
   const [filteredFanResults, setFilteredFanResults] = useState<Place[]>([])
   const [isLoadingFan, setIsLoadingFan] = useState(false)
+  
+  // 팬 추천 전체 데이터 저장 (MEAL, CAFE, TOUR)
+  const [allFanData, setAllFanData] = useState<{
+    MEAL: Place[]
+    CAFE: Place[]
+    TOUR: Place[]
+  }>({
+    MEAL: [],
+    CAFE: [],
+    TOUR: [],
+  })
+  
+  // API 호출 완료 여부 추적
+  const [fanDataLoaded, setFanDataLoaded] = useState(false)
+  const [baseballDataCache, setBaseballDataCache] = useState<{ [key: string]: Place[] }>({})
+  const lastLocationRef = useRef<{ lat: number; lng: number } | null>(null)
 
   // ✅ 선택된 장소 상태
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
   const [showWriteReview, setShowWriteReview] = useState(false)
 
   // 바텀시트 상태 관리
-  const [isExpanded, setIsExpanded] = useState(false) // 기본적으로 닫힌 상태
+  const [isExpanded, setIsExpanded] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStartY, setDragStartY] = useState(0)
   const [dragStartHeight, setDragStartHeight] = useState(0)
@@ -75,9 +101,9 @@ export default function SearchBottomSheet({
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
 
   // 높이 상태 정의
-  const CLOSED_HEIGHT = 200 // 닫힌 상태 높이 (필터/구단 선택까지 포함)
+  const CLOSED_HEIGHT = 200
   const getExpandedHeight = () => (typeof window !== 'undefined' ? window.innerHeight * 0.5 : 300)
-  const getFullscreenHeight = () => (typeof window !== 'undefined' ? window.innerHeight - 10 : 600) // 하단 여백 10px
+  const getFullscreenHeight = () => (typeof window !== 'undefined' ? window.innerHeight - 10 : 600)
 
   // 초기 높이 설정
   useEffect(() => {
@@ -103,23 +129,28 @@ export default function SearchBottomSheet({
     setDragStartHeight(bottomSheetHeight)
   }
 
-  const handleMouseMove = React.useCallback((e: MouseEvent) => {
-    const deltaY = dragStartY - e.clientY
-    const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
-    setBottomSheetHeight(newHeight)
-  }, [dragStartY, dragStartHeight])
+  const handleMouseMove = React.useCallback(
+    (e: MouseEvent) => {
+      const deltaY = dragStartY - e.clientY
+      const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
+      setBottomSheetHeight(newHeight)
+    },
+    [dragStartY, dragStartHeight]
+  )
 
-  const handleTouchMove = React.useCallback((e: TouchEvent) => {
-    e.preventDefault()
-    const deltaY = dragStartY - e.touches[0].clientY
-    const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
-    setBottomSheetHeight(newHeight)
-  }, [dragStartY, dragStartHeight])
+  const handleTouchMove = React.useCallback(
+    (e: TouchEvent) => {
+      e.preventDefault()
+      const deltaY = dragStartY - e.touches[0].clientY
+      const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
+      setBottomSheetHeight(newHeight)
+    },
+    [dragStartY, dragStartHeight]
+  )
 
   const handleMouseUp = React.useCallback(() => {
     setIsDragging(false)
-    
-    // 높이에 따른 상태 결정
+
     setBottomSheetHeight((prevHeight) => {
       if (prevHeight < CLOSED_HEIGHT + 50) {
         setIsExpanded(false)
@@ -136,8 +167,7 @@ export default function SearchBottomSheet({
 
   const handleTouchEnd = React.useCallback(() => {
     setIsDragging(false)
-    
-    // 높이에 따른 상태 결정
+
     setBottomSheetHeight((prevHeight) => {
       if (prevHeight < CLOSED_HEIGHT + 50) {
         setIsExpanded(false)
@@ -172,38 +202,112 @@ export default function SearchBottomSheet({
       document.removeEventListener('touchmove', handleTouchMoveWrapper)
       document.removeEventListener('touchend', handleTouchEndWrapper)
     }
-  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd, getFullscreenHeight, getExpandedHeight])
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd])
 
-  // 팬 추천 API 로드
-  const loadFanCategoryResults = async (category: string) => {
-    if (category === '전체') {
-      // 전체인 경우 상단 검색창에서 검색한 결과를 그대로 사용
-      setFilteredFanResults(searchResults)
+  // 팬 추천 API 로드 (3개 카테고리 모두 호출)
+  const loadAllFanCategories = async () => {
+    // 이미 로드되었고 위치가 크게 변하지 않았으면 스킵
+    if (
+      fanDataLoaded && 
+      lastLocationRef.current &&
+      Math.abs(lastLocationRef.current.lat - currentLocation.lat) < 0.01 &&
+      Math.abs(lastLocationRef.current.lng - currentLocation.lng) < 0.01
+    ) {
       return
     }
-    
-    // 특정 카테고리인 경우 API 호출
+
     setIsLoadingFan(true)
     try {
-      const params = new URLSearchParams({ keyword: category })
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/search/keyword?${params.toString()}`
-      const response = await fetch(apiUrl)
-      if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
-      const data = await response.json()
-      setFilteredFanResults(data.items || [])
+      const categories = ['MEAL', 'CAFE', 'TOUR']
+      const promises = categories.map(async (category) => {
+        const params = new URLSearchParams({
+          type: 'CATEGORY',
+          team: 'hanhwa', // 한화로 고정
+          category: category,
+          latitude: currentLocation.lat.toString(),
+          longitude: currentLocation.lng.toString(),
+          numberOfSuggestions: '20',
+        })
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/suggestions?${params.toString()}`
+        const response = await fetch(apiUrl)
+        if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
+        const data = await response.json()
+        // 카테고리 정보 추가
+        const itemsWithCategory = (data.items || []).map((item: Place) => ({
+          ...item,
+          category: category === 'MEAL' ? '맛집' : category === 'CAFE' ? '카페' : '관광'
+        }))
+        return { category, items: itemsWithCategory }
+      })
+
+      const results = await Promise.all(promises)
+      const newData = {
+        MEAL: results.find((r) => r.category === 'MEAL')?.items || [],
+        CAFE: results.find((r) => r.category === 'CAFE')?.items || [],
+        TOUR: results.find((r) => r.category === 'TOUR')?.items || [],
+      }
+      setAllFanData(newData)
+      setFanDataLoaded(true)
+      lastLocationRef.current = { ...currentLocation }
+
+      // 전체 보기
+      if (fanCategory === '전체') {
+        setFilteredFanResults([...newData.MEAL, ...newData.CAFE, ...newData.TOUR])
+      }
     } catch (error) {
       console.error(error)
+      setAllFanData({ MEAL: [], CAFE: [], TOUR: [] })
       setFilteredFanResults([])
     } finally {
       setIsLoadingFan(false)
     }
   }
 
+  // 팬 추천 탭 활성화 시 데이터 로드
   useEffect(() => {
-    if (activeTab === 'fan') loadFanCategoryResults(fanCategory)
-  }, [fanCategory, activeTab, searchResults])
+    if (activeTab === 'fan') {
+      loadAllFanCategories()
+    }
+  }, [activeTab, currentLocation])
 
+  // 중복 제거 함수
+  const removeDuplicates = (places: Place[]) => {
+    const seen = new Set<string>()
+    return places.filter((place) => {
+      const key = `${place.latitude},${place.longitude}`
+      if (seen.has(key)) {
+        return false
+      }
+      seen.add(key)
+      return true
+    })
+  }
+
+  // 팬 추천 필터 변경 시
+  useEffect(() => {
+    if (activeTab === 'fan' && fanDataLoaded) {
+      let results: Place[] = []
+      if (fanCategory === '전체') {
+        results = [...allFanData.MEAL, ...allFanData.CAFE, ...allFanData.TOUR]
+      } else if (fanCategory === '맛집') {
+        results = allFanData.MEAL
+      } else if (fanCategory === '카페') {
+        results = allFanData.CAFE
+      } else if (fanCategory === '관광') {
+        results = allFanData.TOUR
+      }
+      setFilteredFanResults(removeDuplicates(results))
+    }
+  }, [fanCategory, allFanData, activeTab, fanDataLoaded])
+
+  // 야구선수 맛집 API 로드
   const loadBaseballRestaurants = async (teamCode: string) => {
+    // 캐시에 있으면 재사용
+    if (baseballDataCache[teamCode]) {
+      setBaseballRestaurants(baseballDataCache[teamCode])
+      return
+    }
+
     setIsLoadingBaseball(true)
     try {
       const params = new URLSearchParams({
@@ -214,7 +318,10 @@ export default function SearchBottomSheet({
       const response = await fetch(apiUrl)
       if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
       const data = await response.json()
-      setBaseballRestaurants(data.items || [])
+      const items = data.items || []
+      setBaseballRestaurants(items)
+      // 캐시에 저장
+      setBaseballDataCache(prev => ({ ...prev, [teamCode]: items }))
     } catch (error) {
       console.error(error)
       setBaseballRestaurants([])
@@ -240,18 +347,16 @@ export default function SearchBottomSheet({
 
   const handleTabChange = (tab: 'fan' | 'baseball') => {
     setActiveTab(tab)
-    setSelectedPlace(null) // 탭 변경 시 상세 선택 해제
+    setSelectedPlace(null)
     if (tab === 'baseball' && onTeamSearchRequest) onTeamSearchRequest(selectedTeam.code)
   }
 
   const handleViewModeChange = (mode: 'map' | 'list') => {
     onViewModeChange(mode)
     if (mode === 'list') {
-      // 목록보기 클릭 시 바텀시트 열기
       setBottomSheetHeight(getExpandedHeight())
       setIsExpanded(true)
     } else {
-      // 지도보기 클릭 시 바텀시트 닫기
       setBottomSheetHeight(CLOSED_HEIGHT)
       setIsExpanded(false)
     }
@@ -301,17 +406,39 @@ export default function SearchBottomSheet({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              position: 'relative',
               cursor: 'grab',
               userSelect: 'none',
               touchAction: 'none',
             }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
-            onClick={(e) => {
-              e.preventDefault()
-              handleToggleExpanded()
-            }}
           >
+            {selectedPlace && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedPlace(null)
+                }}
+                style={{
+                  position: 'absolute',
+                  left: '20px',
+                  width: '32px',
+                  height: '32px',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  fontSize: '20px',
+                  color: '#333',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10,
+                }}
+              >
+                ←
+              </button>
+            )}
             <div
               style={{
                 width: '60px',
@@ -374,9 +501,9 @@ export default function SearchBottomSheet({
 
         {/* ✅ 상세보기 모드 */}
         {selectedPlace ? (
-          <PlaceDetail 
-            place={selectedPlace} 
-            onBack={() => setSelectedPlace(null)} 
+          <PlaceDetail
+            place={selectedPlace}
+            onBack={() => setSelectedPlace(null)}
             onWriteReview={() => setShowWriteReview(true)}
           />
         ) : (
@@ -459,7 +586,6 @@ export default function SearchBottomSheet({
                     key={category}
                     onClick={() => {
                       setFanCategory(category)
-                      // 칩 클릭 시 바텀시트 열기
                       if (!isExpanded) {
                         setBottomSheetHeight(getExpandedHeight())
                         setIsExpanded(true)
@@ -488,7 +614,6 @@ export default function SearchBottomSheet({
                 <button
                   onClick={() => {
                     setShowTeamSelector(true)
-                    // 구단 선택 시 바텀시트 열기
                     if (!isExpanded) {
                       setBottomSheetHeight(getExpandedHeight())
                       setIsExpanded(true)
@@ -508,22 +633,15 @@ export default function SearchBottomSheet({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div
+                    <img
+                      src={selectedTeam.logo}
+                      alt={selectedTeam.name}
                       style={{
                         width: '32px',
                         height: '32px',
-                        borderRadius: '50%',
-                        backgroundColor: selectedTeam.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        color: 'white',
+                        objectFit: 'contain',
                       }}
-                    >
-                      {selectedTeam.logo}
-                    </div>
+                    />
                     <span style={{ fontWeight: 'bold', color: '#333' }}>{selectedTeam.name}</span>
                   </div>
                   <span style={{ color: '#666', fontSize: '14px' }}>▼</span>
@@ -588,7 +706,6 @@ export default function SearchBottomSheet({
           onSubmit={(reviewData) => {
             console.log('리뷰 작성:', reviewData)
             setShowWriteReview(false)
-            // 여기에 실제 리뷰 제출 로직 구현
           }}
         />
       )}

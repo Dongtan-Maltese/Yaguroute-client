@@ -139,17 +139,20 @@ export default function TeamSelector({
                 style={{
                   width: '40px',
                   height: '40px',
-                  borderRadius: '50%',
-                  backgroundColor: team.color,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: 'white',
                 }}
               >
-                {team.logo}
+                <img
+                  src={team.logo}
+                  alt={team.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
               </div>
               <span
                 style={{
