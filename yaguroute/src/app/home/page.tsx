@@ -178,7 +178,7 @@ export default function HomePage() {
         >
           <div style={{ color: '#666' }}>지금 경기장 날씨</div>
           <div style={{ fontWeight: 'bold', marginTop: '4px' }}>
-            하늘은 흐림, 상대팀 미래도 흐림 좋겠네
+            하늘은 맑음, 상대팀 미래는 흐림 좋겠네
           </div>
         </div>
       </header>
