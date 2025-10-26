@@ -14,7 +14,14 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'fan' | 'player'>('fan')
   const [places, setPlaces] = useState<Place[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [currentLocation, setCurrentLocation] = useState({ lat: 36.316537, lng: 127.431104 }) // 한화 야구장 기본 좌표
+  const [currentLocation, setCurrentLocation] = useState({ lat: 36.316537, lng: 127.431104 })
+  const [placesCache, setPlacesCache] = useState<{
+    fan: Place[] | null
+    player: Place[] | null
+  }>({
+    fan: null,
+    player: null,
+  })
 
   // // 위치 정보 가져오기
   // useEffect(() => {
@@ -32,8 +39,6 @@ export default function HomePage() {
   //     )
   //   }
   // }, [])
-
-  // 팬 추천 데이터 로드 (전체: 맛집 + 카페 + 관광)
   const loadFanRecommendations = async () => {
     setIsLoading(true)
     try {
@@ -51,34 +56,28 @@ export default function HomePage() {
         const response = await fetch(apiUrl)
         if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
         const data = await response.json()
-        
-        // API 응답 형식에 맞춰 Place 타입으로 변환
-        const items = (data.items || []).map((item: any) => ({
+  
+        return (data.items || []).map((item: any) => ({
           placeId: item.id || '',
           name: item.name || '',
-          latitude: item.latitude ? parseFloat(item.latitude) : 0,
-          longitude: item.longitude ? parseFloat(item.longitude) : 0,
+          latitude: parseFloat(item.latitude ?? 0),
+          longitude: parseFloat(item.longitude ?? 0),
           address: item.description || '',
           formattedAddress: item.description || '',
           photoUrls: item.imageUrl ? [item.imageUrl] : [],
-          rating: null,
-          reviews: [],
-          types: [],
-          businessStatus: '',
-          openingHours: [],
-          priceLevel: null,
-          website: null,
-          phoneNumber: null,
-          distance: null,
-          category: category === 'MEAL' ? '맛집' : category === 'CAFE' ? '카페' : '관광'
+          category:
+            category === 'MEAL'
+              ? '맛집'
+              : category === 'CAFE'
+              ? '카페'
+              : '관광',
         }))
-        
-        return items
       })
-
+  
       const results = await Promise.all(promises)
       const allPlaces = results.flat()
-      setPlaces(allPlaces.slice(0, 10)) // 최대 10개만 표시
+      setPlaces(allPlaces.slice(0, 10))
+      setPlacesCache((prev) => ({ ...prev, fan: allPlaces.slice(0, 10) }))
     } catch (error) {
       console.error(error)
       setPlaces([])
@@ -86,42 +85,33 @@ export default function HomePage() {
       setIsLoading(false)
     }
   }
-
-  // 야구선수 맛집 데이터 로드
+  
+  // 선수 맛집 로드
   const loadPlayerRestaurants = async () => {
     setIsLoading(true)
     try {
       const params = new URLSearchParams({
         type: 'PLAYER_MAT_ZIP',
-        team: 'hanhwa', // 기본 한화
+        team: 'hanhwa',
       })
       const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/suggestions?${params.toString()}`
       const response = await fetch(apiUrl)
       if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`)
       const data = await response.json()
-      
-      // API 응답 형식에 맞춰 Place 타입으로 변환
+  
       const items = (data.items || []).map((item: any) => ({
         placeId: item.id || '',
         name: item.name || '',
-        latitude: item.latitude ? parseFloat(item.latitude) : 0,
-        longitude: item.longitude ? parseFloat(item.longitude) : 0,
+        latitude: parseFloat(item.latitude ?? 0),
+        longitude: parseFloat(item.longitude ?? 0),
         address: item.description || '',
         formattedAddress: item.description || '',
         photoUrls: item.imageUrl ? [item.imageUrl] : [],
-        rating: null,
-        reviews: [],
-        types: [],
-        businessStatus: '',
-        openingHours: [],
-        priceLevel: null,
-        website: null,
-        phoneNumber: null,
-        distance: null,
-        category: '한화 이글스 맛집'
+        category: '한화 이글스 맛집',
       }))
-      
+  
       setPlaces(items.slice(0, 10))
+      setPlacesCache((prev) => ({ ...prev, player: items.slice(0, 10) }))
     } catch (error) {
       console.error(error)
       setPlaces([])
@@ -129,15 +119,22 @@ export default function HomePage() {
       setIsLoading(false)
     }
   }
-
-  // 탭 변경 시 데이터 로드
+  
+  // 위치 변경 시 팬추천 새로 로드
+  useEffect(() => {
+    loadFanRecommendations()
+  }, [currentLocation])
+  
+  // 탭 변경 시 캐시 확인
   useEffect(() => {
     if (activeTab === 'fan') {
-      loadFanRecommendations()
+      if (placesCache.fan) setPlaces(placesCache.fan)
+      else loadFanRecommendations()
     } else {
-      loadPlayerRestaurants()
+      if (placesCache.player) setPlaces(placesCache.player)
+      else loadPlayerRestaurants()
     }
-  }, [activeTab, currentLocation])
+  }, [activeTab])
 
   // 카테고리 한글 변환
   const getCategoryLabel = (place: Place) => {
