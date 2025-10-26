@@ -89,6 +89,7 @@ export default function SearchBottomSheet({
   // 드래그 이벤트 핸들러
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDragging(true)
     setDragStartY(e.clientY)
     setDragStartHeight(bottomSheetHeight)
@@ -96,62 +97,60 @@ export default function SearchBottomSheet({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDragging(true)
     setDragStartY(e.touches[0].clientY)
     setDragStartHeight(bottomSheetHeight)
   }
 
   const handleMouseMove = React.useCallback((e: MouseEvent) => {
-    if (!isDragging) return
-    
     const deltaY = dragStartY - e.clientY
     const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
     setBottomSheetHeight(newHeight)
-  }, [isDragging, dragStartY, dragStartHeight])
+  }, [dragStartY, dragStartHeight])
 
   const handleTouchMove = React.useCallback((e: TouchEvent) => {
-    if (!isDragging) return
-    
+    e.preventDefault()
     const deltaY = dragStartY - e.touches[0].clientY
     const newHeight = Math.max(CLOSED_HEIGHT, Math.min(getFullscreenHeight(), dragStartHeight + deltaY))
     setBottomSheetHeight(newHeight)
-  }, [isDragging, dragStartY, dragStartHeight])
+  }, [dragStartY, dragStartHeight])
 
   const handleMouseUp = React.useCallback(() => {
-    if (!isDragging) return
-    
     setIsDragging(false)
     
     // 높이에 따른 상태 결정
-    if (bottomSheetHeight < CLOSED_HEIGHT + 50) {
-      setBottomSheetHeight(CLOSED_HEIGHT)
-      setIsExpanded(false)
-    } else if (bottomSheetHeight > getFullscreenHeight() * 0.8) {
-      setBottomSheetHeight(getFullscreenHeight())
-      setIsExpanded(true)
-    } else {
-      setBottomSheetHeight(getExpandedHeight())
-      setIsExpanded(true)
-    }
-  }, [isDragging, bottomSheetHeight])
+    setBottomSheetHeight((prevHeight) => {
+      if (prevHeight < CLOSED_HEIGHT + 50) {
+        setIsExpanded(false)
+        return CLOSED_HEIGHT
+      } else if (prevHeight > getFullscreenHeight() * 0.8) {
+        setIsExpanded(true)
+        return getFullscreenHeight()
+      } else {
+        setIsExpanded(true)
+        return getExpandedHeight()
+      }
+    })
+  }, [])
 
   const handleTouchEnd = React.useCallback(() => {
-    if (!isDragging) return
-    
     setIsDragging(false)
     
     // 높이에 따른 상태 결정
-    if (bottomSheetHeight < CLOSED_HEIGHT + 50) {
-      setBottomSheetHeight(CLOSED_HEIGHT)
-      setIsExpanded(false)
-    } else if (bottomSheetHeight > getFullscreenHeight() * 0.8) {
-      setBottomSheetHeight(getFullscreenHeight())
-      setIsExpanded(true)
-    } else {
-      setBottomSheetHeight(getExpandedHeight())
-      setIsExpanded(true)
-    }
-  }, [isDragging, bottomSheetHeight])
+    setBottomSheetHeight((prevHeight) => {
+      if (prevHeight < CLOSED_HEIGHT + 50) {
+        setIsExpanded(false)
+        return CLOSED_HEIGHT
+      } else if (prevHeight > getFullscreenHeight() * 0.8) {
+        setIsExpanded(true)
+        return getFullscreenHeight()
+      } else {
+        setIsExpanded(true)
+        return getExpandedHeight()
+      }
+    })
+  }, [])
 
   // 전역 이벤트 리스너 등록
   useEffect(() => {
@@ -173,7 +172,7 @@ export default function SearchBottomSheet({
       document.removeEventListener('touchmove', handleTouchMoveWrapper)
       document.removeEventListener('touchend', handleTouchEndWrapper)
     }
-  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd])
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd, getFullscreenHeight, getExpandedHeight])
 
   // 팬 추천 API 로드
   const loadFanCategoryResults = async (category: string) => {
@@ -300,10 +299,14 @@ export default function SearchBottomSheet({
               margin: '12px auto',
               cursor: 'grab',
               userSelect: 'none',
+              touchAction: 'none',
             }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
-            onClick={handleToggleExpanded}
+            onClick={(e) => {
+              e.preventDefault()
+              handleToggleExpanded()
+            }}
           />
         ) : (
           <div

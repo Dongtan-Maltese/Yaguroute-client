@@ -40,7 +40,7 @@ export default function IndexPage() {
   return (
     <div
       style={{
-        width: '100%',
+        width: '100vw',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
@@ -49,6 +49,9 @@ export default function IndexPage() {
         backgroundColor: '#f9f7f5',
         padding: '20px 20px 60px',
         overflow: 'hidden',
+        position: 'fixed',
+        top: 0,
+        left: 0,
       }}
     >
       <div
